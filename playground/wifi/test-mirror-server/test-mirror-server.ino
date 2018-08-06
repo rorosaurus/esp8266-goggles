@@ -1,4 +1,5 @@
 #include "FastLED.h"
+#include <ESP8266WiFi.h>
 
 FASTLED_USING_NAMESPACE
 
@@ -26,7 +27,7 @@ CRGB leds[NUM_LEDS];
 #define FRAMES_PER_SECOND  120
 
 void setup() {
-  delay(3000); // 3 second delay for recovery
+  //delay(3000); // 3 second delay for recovery
   
   // tell FastLED about the LED strip configuration
   FastLED.addLeds<LED_TYPE, DATA_PIN>(leds, NUM_LEDS).setCorrection(TypicalLEDStrip);
@@ -34,6 +35,20 @@ void setup() {
 
   // set master brightness control
   FastLED.setBrightness(BRIGHTNESS);
+
+  Serial.begin(115200);
+  Serial.println();
+
+  Serial.print("Setting soft-AP ... ");
+  boolean result = WiFi.softAP("ESPsoftAP_01", "pass-to-soft-AP");
+  if(result == true)
+  {
+    Serial.println("Ready");
+  }
+  else
+  {
+    Serial.println("Failed!");
+  }
 }
 
 
