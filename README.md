@@ -42,8 +42,8 @@ Code for building a squad of LED goggles that automatically synchronize their an
 * Please don't just leave it sitting in direct sun.  The battery and electronics will thank you :)
 
 # Links
-* https://github.com/wemos/Arduino_D1
-* https://wiki.wemos.cc/products:d1:d1_mini
-* https://wiki.wemos.cc/_media/products:d1:sch_d1_mini_v3.0.0.pdf
-* https://github.com/esp8266/Arduino
-* https://arduino-esp8266.readthedocs.io/en/latest/
+* [Wemos D1 GitHub](https://github.com/wemos/Arduino_D1)
+* [Wemos D1 Wiki Page (Pins, etc.)](https://wiki.wemos.cc/products:d1:d1_mini)
+* [Wemos D1 Schematic](https://wiki.wemos.cc/_media/products:d1:sch_d1_mini_v3.0.0.pdf)
+* [ESP8266 Arduino GitHub](https://github.com/esp8266/Arduino)
+* [ESP8266 Arduino Documentation](https://arduino-esp8266.readthedocs.io/en/latest/)
