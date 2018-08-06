@@ -1,8 +1,8 @@
 # ESP8266 LED Goggle Squad
 Code and instructions to build a squad of rechargable LED goggles that automatically synchronize their animations with each other!
-Total cost is around $45 when you order parts in bulk.
 
 # Parts List
+Total cost is around $45 when you order parts in bulk.
 * Microcontroller: [MakerFocus Wemos D1 Mini ESP8266 with integrated BMS](https://smile.amazon.com/gp/product/B075H8X7H2/)
   * The brains, wireless, battery holder and charger, all in one!
 * Battery: [Panasonic NCR18650B](https://www.imrbatteries.com/panasonic-ncr18650b-18650-3350mah-protected-button-top-battery/)
@@ -26,6 +26,7 @@ Total cost is around $45 when you order parts in bulk.
 
 # Hardware assembly
 1. [Learn to solder](https://learn.adafruit.com/adafruit-guide-excellent-soldering) / solder practice!
+1. Take a long look at this high quality, very polished [wiring diagram](wiring-diagram.png) to see how the wires are expected to hook up.
 1. Take your Goggles and drill a small hole in the front right where you'd like your push button to be placed.  Place the push button on the inside of the goggles, only the yellow nub should stick out.  Confirm your hole is wide enough to fit the plastic top on.  Glue the push button in place on the inside.  You can bend or snip the standoffs you won't use below.
 1. Orient your LED drivers, so you know which way is "up".  Use the Adafruit star icon on the PCB to roughly find the "top".  Make sure both your LED drivers are mounted facing the same way when we put them in the goggles, so the animations make sense.
 1. Solder 4 long wires directly to the GPIO on your ESP8266 PCB (D1, D2, 5V, GND).  These wires should approach from the battery side, since we want the populated PCB side to attach flat against the goggle strap.  If you are apprehensive about splicing the GND wire later to supply two different GND connections, you can run one additional wire to the GND pin at this time.
