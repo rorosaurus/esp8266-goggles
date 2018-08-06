@@ -39,7 +39,7 @@ Total cost is around $45 when you order parts in bulk.
 1. Solder these wires as well, feeding them inbetween the right and left goggles.  You can unscrew the goggle lenses and feed the wires between the nose bridge.
 
 # Software Part 2: Confirm everything works!
-1. Now, to test our hard work!  Load up the [lone-wolf-test-button](/lone-wolf-test-button/lone-wolf-test-button.ino) project!  This project is a simplified version of my [old goggles project](https://github.com/rorosaurus/neopixel-goggles), which automatically cycles through 8 different animations.  It also uses the push button to change the mode, so we can test our soldering for the LED drivers and push button at the same time!
+1. Now, to test our hard work!  Load up the [test-button-and-leds](/test-button-and-leds/test-button-and-leds.ino) project!  This project is a simplified version of my [old goggles project](https://github.com/rorosaurus/neopixel-goggles), which automatically cycles through 8 different animations.  It also uses the push button to change the mode, so we can test our soldering for the LED drivers and push button at the same time!
 1. Do the LEDs animate?  Does the button change the modes?  Great!  If not, revisit the assembly instructions above.  Try using a digital multimeter to check the continuity between all your different connections.
 1. The actual wireless connection part is still a work-in-progress.  Coming soon :)
 1. anyway, here's wonderwall
