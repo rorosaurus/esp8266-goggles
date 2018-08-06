@@ -1,8 +1,6 @@
 # ESP8266 LED Goggle Squad
 Code for building a squad of LED goggles that automatically synchronize their animations when they're near each other
 
-![Wemos D1 Mini]()
-
 # Parts List
 * Microcontroller: [MakerFocus Wemos D1 Mini ESP8266 with integrated BMS](https://smile.amazon.com/gp/product/B075H8X7H2/)
   * The brains, wireless, battery holder and charger, all in one!
