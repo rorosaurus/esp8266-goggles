@@ -10,6 +10,7 @@ Code for building a squad of LED goggles that automatically synchronize their an
 4. Follow [these instructions](https://learn.adafruit.com/adafruit-all-about-arduino-libraries-install-use) to install the Arduino libraries from this repository, which are [stored here](https://github.com/rorosaurus/esp8266-goggles/tree/master/libraries)
 5. Plug the board into your computer via micro USB
 6. Turn the device on, and press the flash button (this seems to be optional), then you can upload your sketch!
+7. I recommends starting with the `blink` project.  Try changing the delays and confirm that the LED blinks like you expect it to!
 
 # Parts List
 * Microcontroller: [MakerFocus Wemos D1 Mini ESP8266 with integrated BMS](https://smile.amazon.com/gp/product/B075H8X7H2/)
