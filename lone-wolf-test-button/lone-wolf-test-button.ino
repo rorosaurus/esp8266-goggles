@@ -9,9 +9,9 @@
 #include <avr/power.h>
 #endif
 
-#define LED_PIN 0 // pin 5 maps to "D1" label on our board
+#define LED_PIN 5 // pin 5 maps to "D1" label on our board
 #define LED_LENGTH 32 // total number of LEDs in our strip.  2x16
-#define BUTTON_PIN 2 // this is the pin that our push button is attached to (pin 4 maps to "D2" labelled on our board)
+#define BUTTON_PIN 4 // this is the pin that our push button is attached to (pin 4 maps to "D2" labelled on our board)
 #define MODE_SWITCH_MILLIS 10000 // how many milliseconds between automatically switching modes
 
 Adafruit_NeoPixel pixels = Adafruit_NeoPixel(LED_LENGTH, LED_PIN);
