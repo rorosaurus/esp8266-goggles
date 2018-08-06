@@ -1,5 +1,5 @@
 # ESP8266 LED Goggle Squad
-Code for building a squad of LED goggles that automatically synchronize their animations when they're near each other
+Code for building a squad of LED goggles that automatically synchronize their animations when they're near each other.  Total cost is around $45 when you order parts in bulk.
 
 # Parts List
 * Microcontroller: [MakerFocus Wemos D1 Mini ESP8266 with integrated BMS](https://smile.amazon.com/gp/product/B075H8X7H2/)
@@ -8,6 +8,11 @@ Code for building a squad of LED goggles that automatically synchronize their an
   * Protected cell is important, because I don't trust the MakerFocus low voltage protection
   * These are taller than most 18650's, but they *barely* fit with a little force
 * LED drivers: [Adafruit NeoPixel Ring - 16 x 5050](https://www.adafruit.com/product/1463)
+* [Goggles](https://www.banggood.com/Welding-Cutting-Welders-Industrial-Safety-Goggles-Steampunk-Cup-Goggles-p-1135671.html?cur_warehouse=CN): cheap Chinesium, lots of them available on Amazon too
+* [Diffraction Grating sheet](https://smile.amazon.com/gp/product/B007FZT3Y2/)
+* [Waterproof coating](https://smile.amazon.com/gp/product/B008O9YIV6/)
+* [Push buttons](https://smile.amazon.com/gp/product/B01E38OS7K/)
+* [E6000 Craft Adhesive](https://smile.amazon.com/gp/product/B007TSYNG8/)
 
 # Getting started with Software
 1. Install the [CH340G driver (for D1 mini)](/drivers/CH340G)
