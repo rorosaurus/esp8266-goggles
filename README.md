@@ -17,7 +17,7 @@ Total cost is around $45 when you order parts in bulk.
 
 # Getting started with Software
 1. Install the [CH340G driver (for D1 mini)](/drivers/CH340G)
-1. Install [Arduino IDE](https://www.arduino.cc/en/Main/Software) (follow [these instructions to update the board manager URL in options](https://github.com/wemos/Arduino_D1))
+1. Install [Arduino IDE](https://www.arduino.cc/en/Main/Software) (follow [these instructions to update the board manager URL in options](https://github.com/esp8266/Arduino#installing-with-boards-manager))
 1. In the Arduino IDE, I set Tools -> Board to `WeMos D1 R2 & mini`, and left the rest of the settings as default
 1. Follow [these instructions](https://learn.adafruit.com/adafruit-all-about-arduino-libraries-install-use) to install the Arduino libraries from this repository, which are [stored here](/libraries)
 1. Plug the board into your computer via micro USB
