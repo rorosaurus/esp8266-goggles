@@ -28,22 +28,31 @@ Total cost is around $45 when you order parts in bulk.
 1. [Learn to solder](https://learn.adafruit.com/adafruit-guide-excellent-soldering) / solder practice!
 1. Take a long look at this high quality, very polished [wiring diagram](wiring-diagram.png) to see how the wires are expected to hook up.
 1. Take your Goggles and drill a small hole in the front right where you'd like your push button to be placed.  Place the push button on the inside of the goggles, only the yellow nub should stick out.  Confirm your hole is wide enough to fit the plastic top on.  Glue the push button in place on the inside.  You can bend or snip the standoffs you won't use below.
+1. Use a multimeter in "continuity" mode to test your push button and figure out which leads are connected, and which ones will bridge when you click the button.  Make note of which side you want to tie to `GND` and which side you'll solder to `D2`.
 1. Orient your LED drivers, so you know which way is "up".  Use the Adafruit star icon on the PCB to roughly find the "top".  Make sure both your LED drivers are mounted facing the same way when we put them in the goggles, so the animations make sense.
-1. Solder 4 long wires directly to the GPIO on your ESP8266 PCB (D1, D2, 5V, GND).  These wires should approach from the battery side, since we want the populated PCB side to attach flat against the goggle strap.  If you are apprehensive about splicing the GND wire later to supply two different GND connections, you can run one additional wire to the GND pin at this time.
+1. Solder 4 long wires directly to the GPIO on your ESP8266 PCB (`D1, D2, 5V, GND`).  These wires should approach from the battery side, since we want the populated PCB side to attach flat against the goggle strap.  If you are apprehensive about splicing the `GND` wire later to supply two different `GND` connections, you can run one additional wire to the `GND` pin at this time.  Take another look at my [wiring diagram](wiring-diagram.png)!
 1. Physically place the LED driver and ESP8266 on the goggles and try to evaluate the right length of wire you'll need.  Keep in mind, the goggle strap will strech when you put on the goggles - how will your wires accomodate this streching?  Do you want to wrap them around the straps in loops, like a spring?  Will they remain fixed, but you'll mount the ESP8266 loose enough that it can flex?  Decide now.
 1. Cut the wires to the length you think you'll need.  Always better to be a little longer than you think you need.  The wires should attach similar to [this tutorial on Adafruit](https://learn.adafruit.com/kaleidoscope-eyes-neopixel-led-goggles-trinket-gemma/wiring-soldering) - though I would recommend having the wires come directly into the back of the LEDs if you're comfortable trying.
-1. Conformal coat all PCB surfaces and exposed wires. Check your coverage by using UV light!
-1. Hot glue or epoxy everything you want to stay in place!  Especially wire ends, where tension might form when goggles are streched over your head.  Hot glue is less permanent, if you think you might need to change things in the future.
-1. Remember to close up the ESP8266's metal shield with hot glue / silicone conformal coating.  We can't get under it, but we need to ensure moisture doesn't trap in there.
-1. Electric tape the battery in place, or perhaps sew it against the battery holder with some string.
-1. Sew or otherwise attach the battery/microcontroller to the back of the goggle strap.
-1. [Laser cut](laser-cut-diffraction-sheet.vsdx) the diffraction grating sheet to the proper diameter of the goggle lenses.  Find a way to attach them to the lenses, maybe sandwich them between the LEDs and lense?  Or we can glue them to the lense.
+1. Feed your wires through the side holes of the right goggle.
+1. Solder the wires to their destinations, according to the [wiring diagram](wiring-diagram.png).  For the `GND` wire, you can strip the wire a bit in the  middle, wrap it around the push button pin, then continue the `GND` wire to its destination on the LED driver.
+1. Measure new lengths of wire to attach the right LED driver to the left LED driver.
+1. Solder these wires as well, feeding them inbetween the right and left goggles.  You can unscrew the goggle lenses and feed the wires between the nose bridge.
 
-# Software Part 2
+# Software Part 2: Confirm everything works!
 1. Now, to test our hard work!  Load up the [lone-wolf-test-button](/lone-wolf-test-button/lone-wolf-test-button.ino) project!  This project is a simplified version of my [old goggles project](https://github.com/rorosaurus/neopixel-goggles), which automatically cycles through 8 different animations.  It also uses the push button to change the mode, so we can test our soldering for the LED drivers and push button at the same time!
 1. Do the LEDs animate?  Does the button change the modes?  Great!  If not, revisit the assembly instructions above.  Try using a digital multimeter to check the continuity between all your different connections.
 1. The actual wireless connection part is still a work-in-progress.  Coming soon :)
 1. anyway, here's wonderwall
+
+# Hardware Part 2: Cleaning things up and hardening for future abuse
+1. Trim exposed wires leftover from soldering.
+1. Conformal coat all PCB surfaces and exposed wires. Check your coverage by using UV light!  This will mostly waterproof the electronics, so you can worry random splashes/light rain less.
+1. Hot glue or epoxy everything you want to stay firmly in place!  Especially wire ends, where tension might form when goggles are streched over your head.  Hot glue is less permanent, if you think you might need to change things in the future.
+1. Close up the ESP8266's metal shield with hot glue / silicone conformal coating.  We can't get under it, but we need to ensure moisture doesn't trap in there.
+1. Do you want to prevent dust from entering your goggles through the sides?  Seal those holes!
+1. Electric tape the battery in place, or perhaps sew it against the battery holder with some string.
+1. Sew or otherwise attach the battery/microcontroller to the back of the goggle strap.  Do you want to wrap it in eletrical tape to make it cleaner?
+1. [Laser cut](laser-cut-diffraction-sheet.vsdx) the diffraction grating sheet to the proper diameter of the goggle lenses.  Find a way to attach them to the lenses, maybe sandwich them between the LEDs and lense?  Or we can glue them to the lense.
 
 # General Use Tips
 * Always double-check the polarity of the battery before inserting, or you'll fry it!
