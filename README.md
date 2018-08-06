@@ -10,18 +10,22 @@ Code for building a squad of LED goggles that automatically synchronize their an
 * LED drivers: [Adafruit NeoPixel Ring - 16 x 5050](https://www.adafruit.com/product/1463)
 
 # Getting started with Software
-1. Install the [CH340G driver (for D1 mini)](https://github.com/rorosaurus/esp8266-goggles/tree/master/drivers/CH340G)
+1. Install the [CH340G driver (for D1 mini)](/drivers/CH340G)
 2. Install [Arduino IDE](https://www.arduino.cc/en/Main/Software) (follow [these instructions to update the board manager URL in options](https://github.com/wemos/Arduino_D1))
 3. In the Arduino IDE, I set Tools -> Board to `WeMos D1 R2 & mini`, and left the rest of the settings as default
-4. Follow [these instructions](https://learn.adafruit.com/adafruit-all-about-arduino-libraries-install-use) to install the Arduino libraries from this repository, which are [stored here](https://github.com/rorosaurus/esp8266-goggles/tree/master/libraries)
+4. Follow [these instructions](https://learn.adafruit.com/adafruit-all-about-arduino-libraries-install-use) to install the Arduino libraries from this repository, which are [stored here](/libraries)
 5. Plug the board into your computer via micro USB
 6. Turn the device on, and press the [flash button](wemos-d1-mini.png) (this seems to be optional), then you can upload your sketch!
-7. I recommends starting with the `blink` project.  Try changing the delays and confirm that the LED blinks like you expect it to!
+7. I recommend starting with the [blink](/blink/blink.ino) project.  Try changing the delays and confirm that the LED blinks like you expect it to!  Congrats, you have the basics of the software sorted out!
 
 # Hardware assembly
 
 
-# Software part 2: *coming soon to a repo near you*
+# Software Part 2
+1. Now, to test our hard work!  Load up the [lone-wolf-test-button](/lone-wolf-test-button/lone-wolf-test-button.ino) project!  This project is a simplified version of my [old goggles project](https://github.com/rorosaurus/neopixel-goggles), which automatically cycles through 8 different animations.  It also uses the push button to change the mode, so we can test our soldering for the LED drivers and push button at the same time!
+2. Do the LEDs animate?  Does the button change the modes?  Great!  If not, revisit the assembly instructions above.  Try using a digital multimeter to check the continuity between all your different connections.
+3. The actual wireless connection part is still a work-in-progress.  Coming soon :)
+4. anyway, here's wonderwall
 
 # General Use Tips
 * Always double-check the polarity of the battery before inserting, or you'll fry it!
