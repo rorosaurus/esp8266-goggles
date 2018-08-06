@@ -19,7 +19,14 @@ Code for building a squad of LED goggles that automatically synchronize their an
 7. I recommend starting with the [blink](/blink/blink.ino) project.  Try changing the delays and confirm that the LED blinks like you expect it to!  Congrats, you have the basics of the software sorted out!
 
 # Hardware assembly
-
+1. Put a battery into the holder, turn it on and confirm you see a light blinking on the PCB.  Test the battery charger too!
+2. [Learn to solder](https://learn.adafruit.com/adafruit-guide-excellent-soldering) / solder practice!
+3. `<insert everything here>`
+4. Conformal coat everything, check under UV light
+5. Hot glue or epoxy everything you want to stay in place!
+6. Remember to close up the metal shield with hot glue / silicone conformal coating
+7. Electric tape the battery in place?
+8. Sew or otherwise attach the battery/microcontroller to the back of the goggles
 
 # Software Part 2
 1. Now, to test our hard work!  Load up the [lone-wolf-test-button](/lone-wolf-test-button/lone-wolf-test-button.ino) project!  This project is a simplified version of my [old goggles project](https://github.com/rorosaurus/neopixel-goggles), which automatically cycles through 8 different animations.  It also uses the push button to change the mode, so we can test our soldering for the LED drivers and push button at the same time!
