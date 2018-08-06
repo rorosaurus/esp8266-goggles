@@ -4,8 +4,8 @@ Code for building a squad of LED goggles that automatically synchronize their an
 ![Wemos D1 Mini](wemos-d1-mini.png)
 
 # Install pre-req's
-1. Install the [CH340G driver for D1 mini](https://wiki.wemos.cc/tutorials:get_started:get_started_in_arduino#get_started_in_arduino)
-2. Install [Arduino IDE](https://www.arduino.cc/en/Main/Software) (follow [these instructions to update the board manager](https://github.com/wemos/Arduino_D1))
+1. Install the [CH340G driver (for D1 mini)](https://github.com/rorosaurus/esp8266-goggles/tree/master/drivers/CH340G)
+2. Install [Arduino IDE](https://www.arduino.cc/en/Main/Software) (follow [these instructions to update the board manager URL in options](https://github.com/wemos/Arduino_D1))
 3. In the Arduino IDE, I set Tools -> Board to `WeMos D1 R2 & mini`, and left the rest of the settings as default
 4. Follow [these instructions](https://learn.adafruit.com/adafruit-all-about-arduino-libraries-install-use) to install the Arduino libraries from this repository, which are [stored here](https://github.com/rorosaurus/esp8266-goggles/tree/master/libraries)
 5. Plug the board into your computer via micro USB
