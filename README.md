@@ -36,7 +36,7 @@ Total cost is around $45 when you order parts in bulk.
 1. Feed your wires through the side holes of the right goggle.
 1. Solder the wires to their destinations, according to the [wiring diagram](wiring-diagram.png).  For the `GND` wire, you can strip the wire a bit in the  middle, wrap it around the push button pin, then continue the `GND` wire to its destination on the LED driver.
 1. Measure new lengths of wire to attach the right LED driver to the left LED driver.
-1. Solder these wires as well, feeding them inbetween the right and left goggles.  You can unscrew the goggle lenses and feed the wires between the nose bridge.
+1. Solder these wires as well, feeding them inbetween the right and left goggles.  You can unscrew the goggle lenses and feed the wires between the nose bridge (after clipping some nubs out of the way).
 
 # Software Part 2: Confirm everything works!
 1. Now, to test our hard work!  Load up the [test-button-and-leds](/test-button-and-leds/test-button-and-leds.ino) project!  This project is a simplified version of my [old goggles project](https://github.com/rorosaurus/neopixel-goggles), which automatically cycles through 8 different animations.  It also uses the push button to change the mode, so we can test our soldering for the LED drivers and push button at the same time!
@@ -52,6 +52,7 @@ Total cost is around $45 when you order parts in bulk.
 1. Do you want to prevent dust from entering your goggles through the sides?  Seal those holes!
 1. Electric tape the battery in place, or perhaps sew it against the battery holder with some string.
 1. Sew or otherwise attach the battery/microcontroller to the back of the goggle strap.  Do you want to wrap it in eletrical tape to make it cleaner?
+1. Add some cushion to the sides of where your nose will rub against it.
 1. [Laser cut](laser-cut-diffraction-sheet.vsdx) the diffraction grating sheet to the proper diameter of the goggle lenses.  Find a way to attach them to the lenses, maybe sandwich them between the LEDs and lense?  Or we can glue them to the lense.
 
 # General Use Tips
