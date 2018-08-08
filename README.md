@@ -18,10 +18,10 @@ Total cost is around $45 when you order parts in bulk.
 # Getting started with Software
 1. Install the [CH340G driver (for D1 mini)](/drivers/CH340G)
 1. Install [Arduino IDE](https://www.arduino.cc/en/Main/Software) (follow [these instructions to update the board manager URL in options](https://github.com/esp8266/Arduino#installing-with-boards-manager))
-1. In the Arduino IDE, I set Tools -> Board to `WeMos D1 R2 & mini`, and left the rest of the settings as default
+1. In the Arduino IDE, I set Tools -> Board to `WeMos D1 R2 & mini`, set the Programmer to `USBtinyISP`, and left the rest of the settings as default.
 1. Follow [these instructions](https://learn.adafruit.com/adafruit-all-about-arduino-libraries-install-use) to install the Arduino libraries from this repository, which are [stored here](/libraries)
 1. Plug the board into your computer via micro USB
-1. Turn the device on, and press the [flash button](wemos-d1-mini.png) (this seems to be optional), then you can upload your sketch!
+1. Turn the device on, and press the [flash button](wemos-d1-mini.png) (this seems to be optional), then you can upload your sketch!  If you run into issues uploading, you should restart your PC or try using other COM ports (under Tools).
 1. I recommend starting with the [blink](/blink/blink.ino) project.  Try changing the delays and confirm that the LED blinks like you expect it to!  Congrats, you have the basics of the software sorted out!
 
 # Hardware assembly
@@ -53,6 +53,7 @@ Total cost is around $45 when you order parts in bulk.
 1. Electric tape the battery in place, or perhaps sew it against the battery holder with some string.
 1. Sew or otherwise attach the battery/microcontroller to the back of the goggle strap.  Do you want to wrap it in eletrical tape to make it cleaner?
 1. Add some cushion to the sides of where your nose will rub against it.
+1. Remove any tinted lenses, and glue or otherwise affix the LEDs and glass lenses from shifting/shaking around (dangerous when dancing)!
 1. [Laser cut](laser-cut-diffraction-sheet.vsdx) the diffraction grating sheet to the proper diameter of the goggle lenses.  Find a way to attach them to the lenses, maybe sandwich them between the LEDs and lense?  Or we can glue them to the lense.
 
 # General Use Tips
