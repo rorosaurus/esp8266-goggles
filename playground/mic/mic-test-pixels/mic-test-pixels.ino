@@ -10,7 +10,8 @@ Adafruit Microphone Amplifier
   #include <avr/power.h>
 #endif
 
-#define PIN 0
+#define LED_PIN 5 // GPIO 5 == Pin D1
+#define MIC_PIN 0 // Pin A0
 
 // Parameter 1 = number of pixels in strip
 // Parameter 2 = Arduino pin number (most are valid)
@@ -20,14 +21,14 @@ Adafruit Microphone Amplifier
 //   NEO_GRB     Pixels are wired for GRB bitstream (most NeoPixel products)
 //   NEO_RGB     Pixels are wired for RGB bitstream (v1 FLORA pixels, not v2)
 //   NEO_RGBW    Pixels are wired for RGBW bitstream (NeoPixel RGBW products)
-Adafruit_NeoPixel strip = Adafruit_NeoPixel(16, PIN, NEO_GRB + NEO_KHZ800);
+Adafruit_NeoPixel strip = Adafruit_NeoPixel(16, LED_PIN, NEO_GRB + NEO_KHZ800);
 
 // IMPORTANT: To reduce NeoPixel burnout risk, add 1000 uF capacitor across
 // pixel power leads, add 300 - 500 Ohm resistor on first pixel's data input
 // and minimize distance between Arduino and first pixel.  Avoid connecting
 // on a live circuit...if you must, connect GND first.
 
-const int sampleWindow = 50; // Sample window width in mS (50 mS = 20Hz)
+const int sampleWindow = 100; // Sample window width in mS (50 mS = 20Hz)
 unsigned int sample;
 
 int j = 0;
@@ -36,6 +37,7 @@ void setup()
 {
    Serial.begin(9600);
    strip.begin();
+   strip.setBrightness(25);
    strip.show(); // Initialize all pixels to 'off'
 }
 
@@ -51,7 +53,7 @@ void loop()
    // collect data for 50 mS
    while (millis() - startMillis < sampleWindow)
    {
-      sample = analogRead(0);
+      sample = analogRead(MIC_PIN);
       if (sample < 1024)  // toss out spurious readings
       {
          if (sample > signalMax)
@@ -67,7 +69,7 @@ void loop()
    peakToPeak = signalMax - signalMin;  // max - min = peak-peak amplitude
    double volts = (peakToPeak * 5.0) / 1024;  // convert to volts
 
-  int brightness = map(volts, 0, 5, 0, 255);
+  int brightness = map(volts, 0, 5, 10, 75);
    Serial.println(volts);
 
    j++;
@@ -75,7 +77,7 @@ void loop()
    for(int i=0; i<strip.numPixels(); i++) {
       strip.setPixelColor(i, Wheel((i+j) & 255));
     }
-    strip.setBrightness(brightness);
+//    strip.setBrightness(brightness);
     strip.show();
 }
 

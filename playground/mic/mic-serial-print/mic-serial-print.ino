@@ -3,6 +3,8 @@ Example Sound Level Sketch for the
 Adafruit Microphone Amplifier
 ****************************************/
 
+#define MIC_PIN 0 // PIN A0
+
 const int sampleWindow = 50; // Sample window width in mS (50 mS = 20Hz)
 unsigned int sample;
 
@@ -23,7 +25,7 @@ void loop()
    // collect data for 50 mS
    while (millis() - startMillis < sampleWindow)
    {
-      sample = analogRead(0);
+      sample = analogRead(MIC_PIN);
       if (sample < 1024)  // toss out spurious readings
       {
          if (sample > signalMax)
