@@ -19,14 +19,20 @@ FASTLED_USING_NAMESPACE
 //#define CLK_PIN   4
 #define LED_TYPE    NEOPIXEL
 #define COLOR_ORDER RGB
-#define NUM_LEDS    16
+#define NUM_LEDS    32
 CRGB leds[NUM_LEDS];
 
-#define BRIGHTNESS          96
+#define BUTTON_PIN 4 // this is the pin that our push button is attached to (pin 4 maps to "D2" labelled on our board)
+bool buttonOldState = HIGH;
+
+#define BRIGHTNESS          25
 #define FRAMES_PER_SECOND  120
+#define CHANGE_PATTERN_SECONDS  10
+
+#define ARRAY_SIZE(A) (sizeof(A) / sizeof((A)[0]))
 
 void setup() {
-  //delay(3000); // 3 second delay for recovery
+  pinMode(BUTTON_PIN, INPUT_PULLUP);
   
   // tell FastLED about the LED strip configuration
   FastLED.addLeds<LED_TYPE, DATA_PIN>(leds, NUM_LEDS).setCorrection(TypicalLEDStrip);
@@ -42,10 +48,16 @@ typedef void (*SimplePatternList[])();
 SimplePatternList gPatterns = { rainbow, rainbowWithGlitter, confetti, sinelon, juggle, bpm };
 
 uint8_t gCurrentPatternNumber = 0; // Index number of which pattern is current
+uint32_t lastModeChange = millis();
 uint8_t gHue = 0; // rotating "base color" used by many of the patterns
   
 void loop()
 {
+  // Update current button state
+  bool buttonNewState = digitalRead(BUTTON_PIN);
+  if (buttonNewState == LOW && buttonOldState == HIGH) gCurrentPatternNumber = (gCurrentPatternNumber + 1) % ARRAY_SIZE( gPatterns);
+  buttonOldState = buttonNewState;  // Update button state variables
+  
   // Call the current pattern function once, updating the 'leds' array
   gPatterns[gCurrentPatternNumber]();
 
@@ -56,15 +68,16 @@ void loop()
 
   // do some periodic updates
   EVERY_N_MILLISECONDS( 20 ) { gHue++; } // slowly cycle the "base color" through the rainbow
-  EVERY_N_SECONDS( 10 ) { nextPattern(); } // change patterns periodically
+  EVERY_N_SECONDS( CHANGE_PATTERN_SECONDS ) { nextPattern(); } // change patterns periodically
 }
-
-#define ARRAY_SIZE(A) (sizeof(A) / sizeof((A)[0]))
 
 void nextPattern()
 {
-  // add one to the current pattern number, and wrap around at the end
-  gCurrentPatternNumber = (gCurrentPatternNumber + 1) % ARRAY_SIZE( gPatterns);
+  if (lastModeChange + (CHANGE_PATTERN_SECONDS * 1000) <= millis()) {
+    // add one to the current pattern number, and wrap around at the end
+    gCurrentPatternNumber = (gCurrentPatternNumber + 1) % ARRAY_SIZE( gPatterns);
+    lastModeChange = millis();
+  }
 }
 
 void rainbow() 
