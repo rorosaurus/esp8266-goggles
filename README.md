@@ -77,3 +77,4 @@ Total cost is around $45 when you order parts in bulk.
 * [Wemos D1 Schematic](https://wiki.wemos.cc/_media/products:d1:sch_d1_mini_v3.0.0.pdf)
 * [ESP8266 Arduino GitHub](https://github.com/esp8266/Arduino)
 * [ESP8266 Arduino Documentation](https://arduino-esp8266.readthedocs.io/en/latest/)
+* [ESP8266WiFiMesh](https://github.com/esp8266/Arduino/tree/master/libraries/ESP8266WiFiMesh)
