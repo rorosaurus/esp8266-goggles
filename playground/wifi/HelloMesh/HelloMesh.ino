@@ -1,7 +1,7 @@
 #include <ESP8266WiFi.h>
 #include <ESP8266WiFiMesh.h>
 
-String exampleMeshName("MeshNode_");
+String meshName("MeshNode_");
 
 unsigned int requestNumber = 0;
 unsigned int responseNumber = 0;
@@ -11,7 +11,7 @@ transmission_status_t manageResponse(const String &response, ESP8266WiFiMesh &me
 void networkFilter(int numberOfNetworks, ESP8266WiFiMesh &meshInstance);
 
 /* Create the mesh node object */
-ESP8266WiFiMesh meshNode = ESP8266WiFiMesh(manageRequest, manageResponse, networkFilter, "ChangeThisWiFiPassword_TODO", exampleMeshName, "", true);
+ESP8266WiFiMesh meshNode = ESP8266WiFiMesh(manageRequest, manageResponse, networkFilter, "ChangeThisWiFiPassword_TODO", meshName, "", true);
 
 /**
    Callback for when other nodes send you a request
@@ -97,7 +97,7 @@ void setup() {
   /* Initialise the mesh node */
   meshNode.begin();
   meshNode.activateAP(); // Each AP requires a separate server port.
-  meshNode.setStaticIP(IPAddress(192, 168, 4, 22)); // Activate static IP mode to speed up connection times.
+  //meshNode.setStaticIP(IPAddress(192, 168, 4, 22)); // Activate static IP mode to speed up connection times.
 }
 
 int32_t timeOfLastScan = -10000;
@@ -106,6 +106,7 @@ void loop() {
       || (WiFi.status() != WL_CONNECTED && millis() - timeOfLastScan > 2000)) { // Scan for networks with two second intervals when not already connected.
     String request = "Hello world request #" + String(requestNumber) + " from " + meshNode.getMeshName() + meshNode.getNodeID() + ".";
     meshNode.attemptTransmission(request, false);
+    Serial.println("attempted transmission");
     timeOfLastScan = millis();
 
     if (ESP8266WiFiMesh::latestTransmissionOutcomes.empty()) {
