@@ -5,10 +5,10 @@
 FASTLED_USING_NAMESPACE
 
 // LED globals and macros
-#define DATA_PIN    5 // this is the pin that is connected to data in on the first neopixel ring (pin 5 maps to "D1" labelled on our board)
+#define DATA_PIN    15 // this is the pin that is connected to data in on the first neopixel ring (pin 5 maps to "D1" labelled on our board)
 #define LED_TYPE    NEOPIXEL
 #define COLOR_ORDER RGB
-#define NUM_LEDS    32 // 16 LEDs per eye x 2 eyes
+#define NUM_LEDS    64 // 16 LEDs per eye x 2 eyes
 CRGB leds[NUM_LEDS];
 
 // Push button information
@@ -62,6 +62,9 @@ String manageRequest(const String &request, ESP8266WiFiMesh &meshInstance) {
    @param meshInstance The ESP8266WiFiMesh instance that called the function.
 */
 void networkFilter(int numberOfNetworks, ESP8266WiFiMesh &meshInstance) {
+  int lowestValidNetworkIndex = -1;
+  uint64_t lowestNodeID = 0xFFFFFFFFFFFFFFFF;
+  
   for (int i = 0; i < numberOfNetworks; ++i) {
     String currentSSID = WiFi.SSID(i);
     int meshNameIndex = currentSSID.indexOf(meshInstance.getMeshName());
@@ -70,10 +73,18 @@ void networkFilter(int numberOfNetworks, ESP8266WiFiMesh &meshInstance) {
     if (meshNameIndex >= 0) {
       uint64_t targetNodeID = ESP8266WiFiMesh::stringToUint64(currentSSID.substring(meshNameIndex + meshInstance.getMeshName().length()));
 
-      if (targetNodeID < ESP8266WiFiMesh::stringToUint64(meshInstance.getNodeID())) {
-        ESP8266WiFiMesh::connectionQueue.push_back(NetworkInfo(i));
+      // see if this is the lowestID we've found yet
+      if(targetNodeID < lowestNodeID){
+        lowestNodeID = targetNodeID;
+        lowestValidNetworkIndex = i;
       }
     }
+  }
+  
+  // only connect to the AP with the lowest NodeID
+  if (lowestNodeID < ESP8266WiFiMesh::stringToUint64(meshInstance.getNodeID())) {
+    // we have found a master node!  connect!
+    ESP8266WiFiMesh::connectionQueue.push_back(NetworkInfo(lowestValidNetworkIndex));
   }
 }
 
@@ -124,7 +135,7 @@ void setup() {
   /* Initialise the mesh node */
   meshNode.begin();
   meshNode.activateAP(); // Each AP requires a separate server port.
-  //meshNode.setStaticIP(IPAddress(192, 168, 4, 22)); // Activate static IP mode to speed up connection times.
+  meshNode.setStaticIP(IPAddress(192, 168, 4, 22)); // Activate static IP mode to speed up connection times.
 }
 
 
