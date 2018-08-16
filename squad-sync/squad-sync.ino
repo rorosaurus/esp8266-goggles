@@ -11,6 +11,10 @@ FASTLED_USING_NAMESPACE
 #define NUM_LEDS    64 // 16 LEDs per eye x 2 eyes
 CRGB leds[NUM_LEDS];
 
+uint8_t currentPatternNumber = 0; // Index number of which pattern is current
+uint32_t lastPatternChange = millis(); // keep track of the last time we changed patterns
+uint8_t hue = 0; // rotating "base color" used by many of the patterns
+
 // Push button information
 #define BUTTON_PIN 4 // this is the pin that our push button is attached to (pin 4 maps to "D2" labelled on our board)
 bool buttonOldState = HIGH;
@@ -19,9 +23,7 @@ bool buttonOldState = HIGH;
 #define BRIGHTNESS 25 // 25/255 == 1/10th brightness
 #define FRAMES_PER_SECOND 120
 #define CHANGE_PATTERN_SECONDS 10 // automatically change to the next pattern after this many seconds
-
 #define ARRAY_SIZE(A) (sizeof(A) / sizeof((A)[0]))
-
 
 // Globals for handling the wifi/mesh
 #define nodeID "" // suffix for the wifi network, leave blank unless you're an accessory (backpack, etc.)
@@ -51,8 +53,11 @@ String manageRequest(const String &request, ESP8266WiFiMesh &meshInstance) {
   Serial.print("Request received: ");
   Serial.println(request);
 
-  /* return a string to send back */
-  return ("Hello world response #" + String(responseNumber++) + " from " + meshInstance.getMeshName() + meshInstance.getNodeID() + ".");
+  int millisTillNextChange = (lastPatternChange + (CHANGE_PATTERN_SECONDS*1000)) - millis();
+  if (millisTillNextChange < 0) millisTillNextChange = 0;
+  
+  /* return a string to send back, encoding the state variables to reproduce the current LED animation */
+  return ("currentPatternNumber:" + String(currentPatternNumber) + ",hue:" + String(hue) + ",millisTillNextChange:" + String(millisTillNextChange));
 }
 
 /**
@@ -86,6 +91,10 @@ void networkFilter(int numberOfNetworks, ESP8266WiFiMesh &meshInstance) {
     // we have found a master node!  connect!
     ESP8266WiFiMesh::connectionQueue.push_back(NetworkInfo(lowestValidNetworkIndex));
   }
+  else {
+    // *I* am the master!  Mwuahahahaaa!
+    // uhhh.. I don't think we do anything special if we are the master...
+  }
 }
 
 /**
@@ -104,8 +113,20 @@ transmission_status_t manageResponse(const String &response, ESP8266WiFiMesh &me
   Serial.print("Response received: ");
   Serial.println(response);
 
-  // Our last request got a response, so time to create a new request.
-  meshInstance.setMessage("Hello world request #" + String(++requestNumber) + " from " + meshInstance.getMeshName() + meshInstance.getNodeID() + ".");
+  // Read the response string into the corresponding state variables
+  int commaIndex = response.indexOf(",");
+  String patternNumberString = response.substring(21, commaIndex);
+  Serial.println(patternNumberString);
+  
+  String remainingString = response.substring(commaIndex+1);
+  commaIndex = remainingString.indexOf(",");
+  String hueString = remainingString.substring(4, commaIndex);
+  Serial.println(hueString);
+
+  remainingString = remainingString.substring(commaIndex+1);
+  String nextChangeString = remainingString.substring(21);
+  Serial.println(nextChangeString);
+  
 
   // (void)meshInstance; // This is useful to remove a "unused parameter" compiler warning. Does nothing else.
   return statusCode;
@@ -135,17 +156,13 @@ void setup() {
   /* Initialise the mesh node */
   meshNode.begin();
   meshNode.activateAP(); // Each AP requires a separate server port.
+  
+  // TODO: give each device unique static IPs
   meshNode.setStaticIP(IPAddress(192, 168, 4, 22)); // Activate static IP mode to speed up connection times.
 }
 
-
-// List of patterns to cycle through.  Each is defined as a separate function below.
-typedef void (*SimplePatternList[])();
-SimplePatternList gPatterns = { rainbow, rainbowWithGlitter, confetti, sinelon, juggle, bpm };
-
-uint8_t gCurrentPatternNumber = 0; // Index number of which pattern is current
-uint32_t lastPatternChange = millis(); // keep track of the last time we changed patterns
-uint8_t gHue = 0; // rotating "base color" used by many of the patterns
+typedef void (*SimplePatternList[])(); // List of patterns to cycle through.  Each is defined as a separate function below.
+SimplePatternList patterns = { rainbow, rainbowWithGlitter, confetti, sinelon, juggle, bpm };
 
 // main loop, which executes forever
 void loop() {
@@ -182,7 +199,7 @@ void loop() {
   buttonOldState = buttonNewState;  // Update button state variables
   
   // Call the current pattern function once, updating the 'leds' array
-  gPatterns[gCurrentPatternNumber]();
+  patterns[currentPatternNumber]();
 
   // send the 'leds' array out to the actual LED strip
   FastLED.show();  
@@ -190,7 +207,7 @@ void loop() {
   FastLED.delay(1000/FRAMES_PER_SECOND); 
 
   // do some periodic updates
-  EVERY_N_MILLISECONDS(20) { gHue++; } // slowly cycle the "base color" through the rainbow
+  EVERY_N_MILLISECONDS(20) { hue++; } // slowly cycle the "base color" through the rainbow
   EVERY_N_SECONDS(CHANGE_PATTERN_SECONDS) { patternTimer(); } // change patterns periodically
 }
 
@@ -202,7 +219,7 @@ void patternTimer() {
 
 void nextPattern() {
   // add one to the current pattern number, and wrap around at the end
-  gCurrentPatternNumber = (gCurrentPatternNumber + 1) % ARRAY_SIZE(gPatterns);
+  currentPatternNumber = (currentPatternNumber + 1) % ARRAY_SIZE(patterns);
   lastPatternChange = millis();
 }
 
@@ -212,7 +229,7 @@ void nextPattern() {
 
 void rainbow() {
   // FastLED's built-in rainbow generator
-  fill_rainbow( leds, NUM_LEDS, gHue, 7);
+  fill_rainbow( leds, NUM_LEDS, hue, 7);
 }
 
 void rainbowWithGlitter() {
@@ -231,14 +248,14 @@ void confetti() {
   // random colored speckles that blink in and fade smoothly
   fadeToBlackBy( leds, NUM_LEDS, 10);
   int pos = random16(NUM_LEDS);
-  leds[pos] += CHSV( gHue + random8(64), 200, 255);
+  leds[pos] += CHSV( hue + random8(64), 200, 255);
 }
 
 void sinelon() {
   // a colored dot sweeping back and forth, with fading trails
   fadeToBlackBy( leds, NUM_LEDS, 20);
   int pos = beatsin16( 13, 0, NUM_LEDS-1 );
-  leds[pos] += CHSV( gHue, 255, 192);
+  leds[pos] += CHSV( hue, 255, 192);
 }
 
 void juggle() {
@@ -257,6 +274,6 @@ void bpm() {
   CRGBPalette16 palette = PartyColors_p;
   uint8_t beat = beatsin8( BeatsPerMinute, 64, 255);
   for( int i = 0; i < NUM_LEDS; i++) { //9948
-    leds[i] = ColorFromPalette(palette, gHue+(i*2), beat-gHue+(i*10));
+    leds[i] = ColorFromPalette(palette, hue+(i*2), beat-hue+(i*10));
   }
 }
