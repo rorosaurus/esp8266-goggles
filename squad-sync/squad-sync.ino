@@ -4,29 +4,34 @@
 
 FASTLED_USING_NAMESPACE
 
+// LED globals and macros
 #define DATA_PIN    5 // this is the pin that is connected to data in on the first neopixel ring (pin 5 maps to "D1" labelled on our board)
 #define LED_TYPE    NEOPIXEL
 #define COLOR_ORDER RGB
 #define NUM_LEDS    32 // 16 LEDs per eye x 2 eyes
 CRGB leds[NUM_LEDS];
 
+// Push button information
 #define BUTTON_PIN 4 // this is the pin that our push button is attached to (pin 4 maps to "D2" labelled on our board)
 bool buttonOldState = HIGH;
 
-#define BRIGHTNESS 25 // 25/255 = 1/10th brightness
+// FastLED macros
+#define BRIGHTNESS 25 // 25/255 == 1/10th brightness
 #define FRAMES_PER_SECOND 120
 #define CHANGE_PATTERN_SECONDS 10 // automatically change to the next pattern after this many seconds
 
 #define ARRAY_SIZE(A) (sizeof(A) / sizeof((A)[0]))
 
-#define nodeID ""
 
-String meshName("GoggleSquad_"); // prefix for the wifi networks
-String meshPassword("ChangeThisWiFiPassword_TODO"); // universal password for the networks, for some mild security
+// Globals for handling the wifi/mesh
+#define nodeID "" // suffix for the wifi network, leave blank unless you're an accessory (backpack, etc.)
+#define meshName "GoggleSquad_" // prefix for the wifi networks
+#define meshPassword "ChangeThisWiFiPassword_TODO" // universal password for the networks, for some mild security
 int32_t timeOfLastScan = -10000;
 unsigned int requestNumber = 0;
 unsigned int responseNumber = 0;
 
+// Mesh network function declarations
 String manageRequest(const String &request, ESP8266WiFiMesh &meshInstance);
 transmission_status_t manageResponse(const String &response, ESP8266WiFiMesh &meshInstance);
 void networkFilter(int numberOfNetworks, ESP8266WiFiMesh &meshInstance);
@@ -136,7 +141,7 @@ void loop() {
   if (millis() - timeOfLastScan > 3000 // Give other nodes some time to connect between data transfers.
       || (WiFi.status() != WL_CONNECTED && millis() - timeOfLastScan > 2000)) { // Scan for networks with two second intervals when not already connected.
     String request = "Hello world request #" + String(requestNumber) + " from " + meshNode.getMeshName() + meshNode.getNodeID() + ".";
-    meshNode.attemptTransmission(request, false);
+    meshNode.attemptTransmission(request, true); // try to talk to others, disconnect after
     timeOfLastScan = millis();
 
     if (ESP8266WiFiMesh::latestTransmissionOutcomes.empty()) {
