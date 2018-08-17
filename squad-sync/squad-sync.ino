@@ -14,6 +14,7 @@ CRGB leds[NUM_LEDS];
 uint8_t currentPatternNumber = 0; // Index number of which pattern is current
 uint32_t lastPatternChange = millis(); // keep track of the last time we changed patterns
 uint8_t hue = 0; // rotating "base color" used by many of the patterns
+uint32_t lastHueChange = millis();
 
 // Push button information
 #define BUTTON_PIN 4 // this is the pin that our push button is attached to (pin 4 maps to "D2" labelled on our board)
@@ -21,7 +22,7 @@ bool buttonOldState = HIGH;
 
 // FastLED macros
 #define BRIGHTNESS 25 // 25/255 == 1/10th brightness
-#define FRAMES_PER_SECOND 30
+#define FRAMES_PER_SECOND 120
 #define CHANGE_PATTERN_SECONDS 10 // automatically change to the next pattern after this many seconds
 #define ARRAY_SIZE(A) (sizeof(A) / sizeof((A)[0]))
 
@@ -29,7 +30,9 @@ bool buttonOldState = HIGH;
 #define nodeID "" // suffix for the wifi network, leave blank unless you're an accessory (backpack, etc.)
 #define meshName "GoggleSquad_" // prefix for the wifi networks
 #define meshPassword "ChangeThisWiFiPassword_TODO" // universal password for the networks, for some mild security
-int32_t timeOfLastScan = -10000;
+#define syncIntervalMillis 600000 // sync state variables every 10 minutes
+#define scanIntervalMillis 30000 // scan for new master every 30 seconds
+int32_t timeOfLastScan = -999999999;
 unsigned int requestNumber = 0;
 unsigned int responseNumber = 0;
 
@@ -165,9 +168,10 @@ SimplePatternList patterns = { rainbow, rainbowWithGlitter, confetti, sinelon, j
 
 // main loop, which executes forever
 void loop() {
-  if (millis() - timeOfLastScan > 3000 // Give other nodes some time to connect between data transfers.
-      || (WiFi.status() != WL_CONNECTED && millis() - timeOfLastScan > 2000)) { // Scan for networks with two second intervals when not already connected.
+  if (millis() - timeOfLastScan > 1117000 // Give other nodes some time to connect between data transfers.
+      || (WiFi.status() != WL_CONNECTED && millis() - timeOfLastScan > 1115000)) { // Scan for networks with two second intervals when not already connected.
     String request = "Hello world request #" + String(requestNumber) + " from " + meshNode.getMeshName() + meshNode.getNodeID() + ".";
+    Serial.println(request);
     meshNode.attemptTransmission(request, true); // try to talk to others, disconnect after
     timeOfLastScan = millis();
 
@@ -210,7 +214,11 @@ void loop() {
   FastLED.delay(1000/FRAMES_PER_SECOND); 
 
   // do some periodic updates
-  EVERY_N_MILLISECONDS(20) { hue++; } // slowly cycle the "base color" through the rainbow
+  //EVERY_N_MILLISECONDS(20) { hue++; } // slowly cycle the "base color" through the rainbow
+  if (millis() >= lastHueChange + 20) {
+    hue++;
+    lastHueChange = millis();
+  }
   // change the animation every now and then
   if (millis() >= lastPatternChange + (CHANGE_PATTERN_SECONDS * 1000)) {
     nextPattern();

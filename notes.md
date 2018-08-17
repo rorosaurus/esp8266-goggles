@@ -17,3 +17,9 @@ animate LEDs
 * Rory's Goggles: 4c306c
 * Jenny's Backpack (Yellow Tape): 4c3e67
 * Rory's Backpack: 6e283e
+* Jenny's Goggles: 91c367
+
+
+Slaves seem to get ~1 second ahead on hue after ~60 seconds
+Maybe use a static pattern specifically for syncing each pattern cycle?
+manually updating the hue value seems to sync much much better...

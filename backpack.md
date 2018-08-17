@@ -1,10 +1,9 @@
 To edit sketches to work for backpack and other accessories,
 
 ````
-#define DATA_PIN    15
+#define DATA_PIN    15 // pin 15 maps to "D8" labelled on our board
 #define LED_TYPE    WS2812B
-#define COLOR_ORDER RGB
-#define NUM_LEDS    64
+#define NUM_LEDS    64 // 40 leds back + (12x2) on the front sides
 
 ...
 
