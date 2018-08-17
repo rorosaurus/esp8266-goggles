@@ -21,7 +21,7 @@ bool buttonOldState = HIGH;
 
 // FastLED macros
 #define BRIGHTNESS 25 // 25/255 == 1/10th brightness
-#define FRAMES_PER_SECOND 120
+#define FRAMES_PER_SECOND 30
 #define CHANGE_PATTERN_SECONDS 10 // automatically change to the next pattern after this many seconds
 #define ARRAY_SIZE(A) (sizeof(A) / sizeof((A)[0]))
 
@@ -116,18 +116,17 @@ transmission_status_t manageResponse(const String &response, ESP8266WiFiMesh &me
   // Read the response string into the corresponding state variables
   int commaIndex = response.indexOf(",");
   String patternNumberString = response.substring(21, commaIndex);
-  Serial.println(patternNumberString);
+  currentPatternNumber = atoi(patternNumberString.c_str());
   
   String remainingString = response.substring(commaIndex+1);
   commaIndex = remainingString.indexOf(",");
   String hueString = remainingString.substring(4, commaIndex);
-  Serial.println(hueString);
+  hue = atoi(hueString.c_str());
 
   remainingString = remainingString.substring(commaIndex+1);
   String nextChangeString = remainingString.substring(21);
-  Serial.println(nextChangeString);
+  lastPatternChange = millis() - ((CHANGE_PATTERN_SECONDS * 1000) - (atoi(nextChangeString.c_str())));
   
-
   // (void)meshInstance; // This is useful to remove a "unused parameter" compiler warning. Does nothing else.
   return statusCode;
 }
@@ -195,8 +194,12 @@ void loop() {
   
   // Update current button state
   bool buttonNewState = digitalRead(BUTTON_PIN);
-  if (buttonNewState == LOW && buttonOldState == HIGH) nextPattern();
+  if (buttonNewState == LOW && buttonOldState == HIGH) {
+    // TODO: disable if we're a slave?
+    nextPattern();
+  }
   buttonOldState = buttonNewState;  // Update button state variables
+  // TODO: long press to disable wifi?
   
   // Call the current pattern function once, updating the 'leds' array
   patterns[currentPatternNumber]();
@@ -208,11 +211,8 @@ void loop() {
 
   // do some periodic updates
   EVERY_N_MILLISECONDS(20) { hue++; } // slowly cycle the "base color" through the rainbow
-  EVERY_N_SECONDS(CHANGE_PATTERN_SECONDS) { patternTimer(); } // change patterns periodically
-}
-
-void patternTimer() {
-  if (lastPatternChange + (CHANGE_PATTERN_SECONDS * 1000) <= millis()) {
+  // change the animation every now and then
+  if (millis() >= lastPatternChange + (CHANGE_PATTERN_SECONDS * 1000)) {
     nextPattern();
   }
 }
