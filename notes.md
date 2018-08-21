@@ -1,4 +1,4 @@
-Note: the master is the nodeID with the lowest value
+Note: currently, the master is the nodeID with the lowest value
 
 # Psuedo-code
 
@@ -23,3 +23,6 @@ animate LEDs
 Slaves seem to get ~1 second ahead on hue after ~60 seconds
 Maybe use a static pattern specifically for syncing each pattern cycle?
 manually updating the hue value seems to sync much much better...
+
+disable the pattern switch button during connected mode
+add a pattern which rotates through all patterns?

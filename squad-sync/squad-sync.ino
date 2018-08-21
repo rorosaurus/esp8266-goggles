@@ -5,10 +5,10 @@
 FASTLED_USING_NAMESPACE
 
 // LED globals and macros
-#define DATA_PIN    15 // this is the pin that is connected to data in on the first neopixel ring (pin 5 maps to "D1" labelled on our board)
+#define DATA_PIN    5 // this is the pin that is connected to data in on the first neopixel ring (pin 5 maps to "D1" labelled on our board)
 #define LED_TYPE    NEOPIXEL
 #define COLOR_ORDER RGB
-#define NUM_LEDS    64 // 16 LEDs per eye x 2 eyes
+#define NUM_LEDS    32 // 16 LEDs per eye x 2 eyes
 CRGB leds[NUM_LEDS];
 
 uint8_t currentPatternNumber = 0; // Index number of which pattern is current
@@ -19,6 +19,8 @@ uint32_t lastHueChange = millis();
 // Push button information
 #define BUTTON_PIN 4 // this is the pin that our push button is attached to (pin 4 maps to "D2" labelled on our board)
 bool buttonOldState = HIGH;
+int32_t lastButtonHigh = millis(); // the millis of the last time we saw the button as "high" (not pressed)
+#define BUTTON_LONGPRESS_MILLIS 3000 // number of millis before registering a long press
 
 // FastLED macros
 #define BRIGHTNESS 25 // 25/255 == 1/10th brightness
@@ -27,6 +29,7 @@ bool buttonOldState = HIGH;
 #define ARRAY_SIZE(A) (sizeof(A) / sizeof((A)[0]))
 
 // Globals for handling the wifi/mesh
+bool wifiEnabled = true;
 #define nodeID "" // suffix for the wifi network, leave blank unless you're an accessory (backpack, etc.)
 #define meshName "GoggleSquad_" // prefix for the wifi networks
 #define meshPassword "ChangeThisWiFiPassword_TODO" // universal password for the networks, for some mild security
@@ -198,12 +201,28 @@ void loop() {
   
   // Update current button state
   bool buttonNewState = digitalRead(BUTTON_PIN);
+  if (buttonNewState == HIGH) lastButtonHigh = millis();
   if (buttonNewState == LOW && buttonOldState == HIGH) {
-    // TODO: disable if we're a slave?
+    // TODO: disable unless we are solo
     nextPattern();
   }
   buttonOldState = buttonNewState;  // Update button state variables
-  // TODO: long press to disable wifi?
+  if (millis() > lastButtonHigh + BUTTON_LONGPRESS_MILLIS) {
+    // handle longpress
+    wifiEnabled = !wifiEnabled;
+    if (wifiEnabled) {
+      for(int i = 0; i < NUM_LEDS; i++) {
+        leds[i] = CRGB::Red;
+      }
+    }
+    else {
+      for(int i = 0; i < NUM_LEDS; i++) {
+        leds[i] = CRGB::Green;
+      }
+    }
+    FastLED.show();
+    FastLED.delay(3000);
+  }
   
   // Call the current pattern function once, updating the 'leds' array
   patterns[currentPatternNumber]();
@@ -214,7 +233,6 @@ void loop() {
   FastLED.delay(1000/FRAMES_PER_SECOND); 
 
   // do some periodic updates
-  //EVERY_N_MILLISECONDS(20) { hue++; } // slowly cycle the "base color" through the rainbow
   if (millis() >= lastHueChange + 20) {
     hue++;
     lastHueChange = millis();
