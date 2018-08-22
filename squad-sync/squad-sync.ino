@@ -38,9 +38,9 @@ bool syncedWithGroup = false;
 #define nodeID "" // suffix for the wifi network, leave blank unless you're an accessory (backpack, etc.)
 #define meshName "GoggleSquad_" // prefix for the wifi networks
 #define meshPassword "ChangeThisWiFiPassword_TODO" // universal password for the networks, for some mild security
-#define syncIntervalMillis 600000 // sync state variables every 10 minutes
+#define SYNC_INTERVAL_MILLIS 600000 // sync state variables every 10 minutes
 #define scanIntervalMillis 30000 // scan for new master every 30 seconds
-int32_t timeOfLastScan = -999999999;
+int32_t timeOfLastScan = 0;
 unsigned int requestNumber = 0;
 unsigned int responseNumber = 0;
 String request = "";
@@ -189,6 +189,9 @@ void setup() {
   
   // TODO: give each device unique static IPs
   meshNode.setStaticIP(IPAddress(192, 168, 4, 22)); // Activate static IP mode to speed up connection times.
+
+  // force an initial scan/sync
+  attemptSync();
 }
 
 typedef void (*SimplePatternList[])(); // List of patterns to cycle through.  Each is defined as a separate function below.
@@ -196,26 +199,10 @@ SimplePatternList patterns = { rainbow, rainbowWithGlitter, confetti, oppositeSp
 
 // main loop, which executes forever
 void loop() {
-  if (millis() - timeOfLastScan > 1117000 // Give other nodes some time to connect between data transfers.
-      || (WiFi.status() != WL_CONNECTED && millis() - timeOfLastScan > 1115000)) { // Scan for networks with two second intervals when not already connected.
+  if (millis() > timeOfLastScan + SYNC_INTERVAL_MILLIS) { // if we haven't sync'd in a while, search and sync
     attemptSync();
-
-    if (ESP8266WiFiMesh::latestTransmissionOutcomes.empty()) {
-      Serial.println("No mesh AP found.");
-    } else {
-      for (TransmissionResult &transmissionResult : ESP8266WiFiMesh::latestTransmissionOutcomes) {
-        if (transmissionResult.transmissionStatus == TS_TRANSMISSION_FAILED) {
-          Serial.println("Transmission failed to mesh AP " + transmissionResult.SSID);
-        } else if (transmissionResult.transmissionStatus == TS_CONNECTION_FAILED) {
-          Serial.println("Connection failed to mesh AP " + transmissionResult.SSID);
-        } else if (transmissionResult.transmissionStatus == TS_TRANSMISSION_COMPLETE) {
-          // No need to do anything, transmission was successful.
-        } else {
-          Serial.println("Invalid transmission status for " + transmissionResult.SSID + "!");
-        }
-      }
-    }
-    Serial.println();
+  //} else if (){ // TODO: check for new or abandoned master node
+    
   } else {
     /* Accept any incoming connections */
     meshNode.acceptRequest();
@@ -252,19 +239,8 @@ void handleButton() {
   // Update current button state
   bool buttonNewState = digitalRead(BUTTON_PIN);
     
-  // handle short press if we aren't in a group
-  if (!syncedWithGroup && buttonNewState == HIGH && buttonOldState == LOW) {
-    nextPattern();
-  }
-  
-  // handle mid-press
-  if (buttonNewState == HIGH // we just let go of the button
-      && millis() > lastButtonHigh + BUTTON_MIDPRESS_MILLIS) {
-    winkyFace();
-  }
-  
   // handle longpress
-  else if (millis() > lastButtonHigh + BUTTON_LONGPRESS_MILLIS) {
+  if (millis() > lastButtonHigh + BUTTON_LONGPRESS_MILLIS) {
     // toggle wifiEnabled
     wifiEnabled = !wifiEnabled;
     // give user some feedback
@@ -277,6 +253,17 @@ void handleButton() {
     }
     FastLED.show();
     FastLED.delay(2000);
+  }
+
+  // handle mid-press
+  else if (buttonNewState == HIGH && buttonOldState == LOW // we just let go of the button
+      && millis() > lastButtonHigh + BUTTON_MIDPRESS_MILLIS) {
+    winkyFace();
+  }
+
+  // handle short press if we aren't in a group
+  else if (!syncedWithGroup && buttonNewState == HIGH && buttonOldState == LOW) {
+    nextPattern();
   }
 
   buttonNewState = digitalRead(BUTTON_PIN);
@@ -306,7 +293,7 @@ void winkyFace() {
     FastLED.delay(50);
   }
   FastLED.show();  
-  FastLED.delay(500);
+  FastLED.delay(250);
 
   // wink
   for (int i=0; i < FRAMES_PER_SECOND/2; i++) {

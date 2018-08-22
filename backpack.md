@@ -4,9 +4,11 @@ To edit sketches to work for backpack and other accessories,
 #define DATA_PIN    15 // pin 15 maps to "D8" labelled on our board
 #define LED_TYPE    WS2812B
 #define NUM_LEDS    64 // 40 leds back + (12x2) on the front sides
+````
 
-...
+You can also use something like below to force the backpack to be a slave, not a master
 
+````
 #define nodeID "000000"
 ````
 
