@@ -201,15 +201,17 @@ SimplePatternList patterns = { rainbow, rainbowWithGlitter, confetti, oppositeSp
 
 // main loop, which executes forever
 void loop() {
-  if (millis() > timeOfLastScan + SYNC_INTERVAL_MILLIS) { // if we haven't sync'd in a while, search and sync
-    attemptSync();
-  //} else if (){ // TODO: check for new or abandoned master node
-    
-  } else {
-    /* Accept any incoming connections */
-    meshNode.acceptRequest();
+  if (wifiEnabled) {
+    if (millis() > timeOfLastScan + SYNC_INTERVAL_MILLIS) { // if we haven't sync'd in a while, search and sync
+        attemptSync();
+    //} else if (){ // TODO: check for new or abandoned master node
+      
+    } else {
+      /* Accept any incoming connections */
+      meshNode.acceptRequest();
+    }
   }
-  
+    
   handleButton();
   
   // Call the current pattern function once, updating the 'leds' array
@@ -225,8 +227,9 @@ void loop() {
     hue++;
     lastHueChange = millis();
   }
-  // change the animation every now and then, if we're in wifi/group mode
-  if (wifiEnabled && millis() >= lastPatternChange + (CHANGE_PATTERN_SECONDS * 1000)) {
+  // change the animation every now and then
+  if (millis() >= lastPatternChange + (CHANGE_PATTERN_SECONDS * 1000)
+      && wifiEnabled) {  // if we're in wifi/group mode
     nextPattern();
   }
 }
@@ -248,9 +251,11 @@ void handleButton() {
     // give user some feedback
     if (wifiEnabled) {
       fill_solid(leds, NUM_LEDS, CRGB::Green);
+      meshNode.activateAP();
     }
-    else {
+    else { // wifi is disabled
       fill_solid(leds, NUM_LEDS, CRGB::Red);
+      meshNode.deactivateAP();
       masterNodeID = "";
     }
     FastLED.show();
@@ -259,8 +264,8 @@ void handleButton() {
 
   // handle mid-press
   else if (buttonNewState == HIGH && buttonOldState == LOW // we just let go of the button
-      && millis() > lastButtonHigh + BUTTON_MIDPRESS_MILLIS
-      && masterNodeID != meshNode.getNodeID()) {
+      && masterNodeID != meshNode.getNodeID() // prevent the lead node from winking, so everyone stays in sync
+      && millis() > lastButtonHigh + BUTTON_MIDPRESS_MILLIS) {
     winkyFace();
   }
 
