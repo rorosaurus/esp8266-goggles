@@ -1,6 +1,8 @@
 # ESP8266 LED Goggle Squad
 Code and instructions to build a squad of rechargable LED goggles that automatically synchronize their animations with each other!
 
+![Wifi sync demo](demo.gif)
+
 # Parts List
 Total cost is around $45 when you order parts in bulk.
 * Microcontroller: [MakerFocus Wemos D1 Mini ESP8266 with integrated BMS](https://smile.amazon.com/gp/product/B075H8X7H2/)
