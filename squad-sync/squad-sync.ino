@@ -34,6 +34,7 @@ int32_t lastButtonHigh = 999999999; // the millis of the last time we saw the bu
 
 // Globals for handling the wifi/mesh
 bool wifiEnabled = true;
+bool syncedWithGroup = false;
 #define nodeID "" // suffix for the wifi network, leave blank unless you're an accessory (backpack, etc.)
 #define meshName "GoggleSquad_" // prefix for the wifi networks
 #define meshPassword "ChangeThisWiFiPassword_TODO" // universal password for the networks, for some mild security
@@ -42,6 +43,7 @@ bool wifiEnabled = true;
 int32_t timeOfLastScan = -999999999;
 unsigned int requestNumber = 0;
 unsigned int responseNumber = 0;
+String request = "";
 
 // Mesh network function declarations
 String manageRequest(const String &request, ESP8266WiFiMesh &meshInstance);
@@ -50,6 +52,16 @@ void networkFilter(int numberOfNetworks, ESP8266WiFiMesh &meshInstance);
 
 /* Create the mesh node object */
 ESP8266WiFiMesh meshNode = ESP8266WiFiMesh(manageRequest, manageResponse, networkFilter, meshPassword, meshName, nodeID, true, 1);
+
+// ====================
+// wifi functions
+// ====================
+
+void attemptSync(){
+  Serial.println(request);
+  meshNode.attemptTransmission(request, true); // try to talk to others, disconnect after
+  timeOfLastScan = millis();
+}
 
 /**
    Callback for when other nodes send you a request
@@ -136,10 +148,16 @@ transmission_status_t manageResponse(const String &response, ESP8266WiFiMesh &me
   remainingString = remainingString.substring(commaIndex+1);
   String nextChangeString = remainingString.substring(21);
   lastPatternChange = millis() - ((CHANGE_PATTERN_SECONDS * 1000) - (atoi(nextChangeString.c_str())));
+
+  syncedWithGroup = true;
   
   // (void)meshInstance; // This is useful to remove a "unused parameter" compiler warning. Does nothing else.
   return statusCode;
 }
+
+// ====================
+// main functions
+// ====================
 
 // setup function. runs once, then loop() runs forever
 void setup() {
@@ -165,6 +183,8 @@ void setup() {
   /* Initialise the mesh node */
   meshNode.begin();
   meshNode.activateAP(); // Each AP requires a separate server port.
+
+  request = "Hello world request #" + String(requestNumber) + " from " + meshNode.getMeshName() + meshNode.getNodeID() + ".";
   
   // TODO: give each device unique static IPs
   meshNode.setStaticIP(IPAddress(192, 168, 4, 22)); // Activate static IP mode to speed up connection times.
@@ -177,10 +197,7 @@ SimplePatternList patterns = { rainbow, rainbowWithGlitter, confetti, oppositeSp
 void loop() {
   if (millis() - timeOfLastScan > 1117000 // Give other nodes some time to connect between data transfers.
       || (WiFi.status() != WL_CONNECTED && millis() - timeOfLastScan > 1115000)) { // Scan for networks with two second intervals when not already connected.
-    String request = "Hello world request #" + String(requestNumber) + " from " + meshNode.getMeshName() + meshNode.getNodeID() + ".";
-    Serial.println(request);
-    meshNode.attemptTransmission(request, true); // try to talk to others, disconnect after
-    timeOfLastScan = millis();
+    attemptSync();
 
     if (ESP8266WiFiMesh::latestTransmissionOutcomes.empty()) {
       Serial.println("No mesh AP found.");
@@ -203,39 +220,7 @@ void loop() {
     meshNode.acceptRequest();
   }
   
-  // Update current button state
-  bool buttonNewState = digitalRead(BUTTON_PIN);
-    
-  // handle short press
-  if (buttonNewState == HIGH && buttonOldState == LOW) {
-    // TODO: disable when we are in a group
-    nextPattern();
-  }
-  
-  // handle mid-press
-  if (buttonNewState == HIGH // we just let go of the button
-      && millis() > lastButtonHigh + BUTTON_MIDPRESS_MILLIS) {
-    winkyFace();
-  }
-  
-  // handle longpress
-  else if (millis() > lastButtonHigh + BUTTON_LONGPRESS_MILLIS) {
-    // toggle wifiEnabled
-    wifiEnabled = !wifiEnabled;
-    // give user some feedback
-    if (wifiEnabled) {
-      fill_solid(leds, NUM_LEDS, CRGB::Green);
-    }
-    else {
-      fill_solid(leds, NUM_LEDS, CRGB::Red);
-    }
-    FastLED.show();
-    FastLED.delay(2000);
-  }
-
-  buttonNewState = digitalRead(BUTTON_PIN);
-  if (buttonNewState == HIGH) lastButtonHigh = millis();
-  buttonOldState = buttonNewState;  // Update button state variables
+  handleButton();
   
   // Call the current pattern function once, updating the 'leds' array
   patterns[currentPatternNumber]();
@@ -260,6 +245,42 @@ void nextPattern() {
   // add one to the current pattern number, and wrap around at the end
   currentPatternNumber = (currentPatternNumber + 1) % ARRAY_SIZE(patterns);
   lastPatternChange = millis();
+}
+
+void handleButton() {
+  // Update current button state
+  bool buttonNewState = digitalRead(BUTTON_PIN);
+    
+  // handle short press if we aren't in a group
+  if (!syncedWithGroup && buttonNewState == HIGH && buttonOldState == LOW) {
+    nextPattern();
+  }
+  
+  // handle mid-press
+  if (buttonNewState == HIGH // we just let go of the button
+      && millis() > lastButtonHigh + BUTTON_MIDPRESS_MILLIS) {
+    winkyFace();
+  }
+  
+  // handle longpress
+  else if (millis() > lastButtonHigh + BUTTON_LONGPRESS_MILLIS) {
+    // toggle wifiEnabled
+    wifiEnabled = !wifiEnabled;
+    // give user some feedback
+    if (wifiEnabled) {
+      fill_solid(leds, NUM_LEDS, CRGB::Green);
+    }
+    else {
+      fill_solid(leds, NUM_LEDS, CRGB::Red);
+      syncedWithGroup = false;
+    }
+    FastLED.show();
+    FastLED.delay(2000);
+  }
+
+  buttonNewState = digitalRead(BUTTON_PIN);
+  if (buttonNewState == HIGH) lastButtonHigh = millis();
+  buttonOldState = buttonNewState;  // Update button state variables
 }
 
 // ====================
@@ -300,8 +321,15 @@ void winkyFace() {
     FastLED.show();  
     FastLED.delay(1000/FRAMES_PER_SECOND);
   }
-  
-  FastLED.delay(1000);
+
+  uint32_t startTime = millis();
+  if (wifiEnabled){
+    attemptSync(); // try to resync with the group
+  }
+  // make sure we wait at least 1 second
+  if (millis() - startTime < 1000){
+    FastLED.delay(1000 - (millis() - startTime));
+  }
 }
 
 void rainbow() {
