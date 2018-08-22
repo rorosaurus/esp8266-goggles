@@ -34,7 +34,7 @@ int32_t lastButtonHigh = 999999999; // the millis of the last time we saw the bu
 
 // Globals for handling the wifi/mesh
 bool wifiEnabled = true;
-bool syncedWithGroup = false;
+String masterNodeID = "";
 #define nodeID "" // suffix for the wifi network, leave blank unless you're an accessory (backpack, etc.)
 #define meshName "GoggleSquad_" // prefix for the wifi networks
 #define meshPassword "ChangeThisWiFiPassword_TODO" // universal password for the networks, for some mild security
@@ -78,7 +78,8 @@ String manageRequest(const String &request, ESP8266WiFiMesh &meshInstance) {
   int millisTillNextChange = (lastPatternChange + (CHANGE_PATTERN_SECONDS*1000)) - millis();
   if (millisTillNextChange < 0) millisTillNextChange = 0;
 
-  syncedWithGroup = true;
+  // someone wants to be our slave!  we're in a group and we're leading!
+  masterNodeID = meshNode.getNodeID();
   
   /* return a string to send back, encoding the state variables to reproduce the current LED animation */
   return ("currentPatternNumber:" + String(currentPatternNumber) + ",hue:" + String(hue) + ",millisTillNextChange:" + String(millisTillNextChange));
@@ -110,7 +111,7 @@ void networkFilter(int numberOfNetworks, ESP8266WiFiMesh &meshInstance) {
     }
   }
   if (lowestValidNetworkIndex == -1) { // we're all alone out here...
-    syncedWithGroup = false;
+    masterNodeID = "";
   }
   
   // only connect to the AP with the lowest NodeID
@@ -150,7 +151,8 @@ transmission_status_t manageResponse(const String &response, ESP8266WiFiMesh &me
   String nextChangeString = remainingString.substring(21);
   lastPatternChange = millis() - ((CHANGE_PATTERN_SECONDS * 1000) - (atoi(nextChangeString.c_str())));
 
-  syncedWithGroup = true;
+  // we have joined a group!  keep track of our master node's ID.
+  masterNodeID = meshInstance.getNodeID();
   
   // (void)meshInstance; // This is useful to remove a "unused parameter" compiler warning. Does nothing else.
   return statusCode;
@@ -249,7 +251,7 @@ void handleButton() {
     }
     else {
       fill_solid(leds, NUM_LEDS, CRGB::Red);
-      syncedWithGroup = false;
+      masterNodeID = "";
     }
     FastLED.show();
     FastLED.delay(2000);
@@ -262,7 +264,7 @@ void handleButton() {
   }
 
   // handle short press if we aren't in a group
-  else if (!syncedWithGroup && buttonNewState == HIGH && buttonOldState == LOW) {
+  else if (masterNodeID == "" && buttonNewState == HIGH && buttonOldState == LOW) {
     nextPattern();
   }
 
@@ -313,6 +315,7 @@ void winkyFace() {
   uint32_t startTime = millis();
   if (wifiEnabled){
     attemptSync(); // try to resync with the group
+    // TODO: what if the leader winks?  prevent it?
   }
   // make sure we wait at least 1 second
   if (millis() - startTime < 1000){
