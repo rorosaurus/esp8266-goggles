@@ -1,3 +1,5 @@
+Note: When wifi is enabled, the patterns automatically change every few seconds.  The patterns will not automatically change when wifi is off.
+
 # Buttons and Modes
 * Short click: changes the pattern (unless you're in a group)
 * Medium hold: perform a wink, then resync with group
