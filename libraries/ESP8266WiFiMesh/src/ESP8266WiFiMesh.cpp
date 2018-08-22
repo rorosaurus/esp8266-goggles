@@ -386,9 +386,9 @@ transmission_status_t ESP8266WiFiMesh::connectToNode(const String &targetSSID, i
   int attemptNumber = 1;
 
   int waitingTime = millis() - connectionStartTime;
-  while((WiFi.status() == WL_DISCONNECTED) && waitingTime <= 10000)
+  while((WiFi.status() == WL_DISCONNECTED) && waitingTime <= 3000)
   {
-    if(waitingTime > attemptNumber * 10000) // 10000 can be lowered if you want to limit the time allowed for each connection attempt.
+    if(waitingTime > attemptNumber * 3000) // 10000 can be lowered if you want to limit the time allowed for each connection attempt.
     {
       verboseModePrint("... ", false);
       WiFi.disconnect();
