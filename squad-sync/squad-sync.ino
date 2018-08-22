@@ -77,6 +77,8 @@ String manageRequest(const String &request, ESP8266WiFiMesh &meshInstance) {
 
   int millisTillNextChange = (lastPatternChange + (CHANGE_PATTERN_SECONDS*1000)) - millis();
   if (millisTillNextChange < 0) millisTillNextChange = 0;
+
+  syncedWithGroup = true;
   
   /* return a string to send back, encoding the state variables to reproduce the current LED animation */
   return ("currentPatternNumber:" + String(currentPatternNumber) + ",hue:" + String(hue) + ",millisTillNextChange:" + String(millisTillNextChange));
@@ -107,15 +109,14 @@ void networkFilter(int numberOfNetworks, ESP8266WiFiMesh &meshInstance) {
       }
     }
   }
+  if (lowestValidNetworkIndex == -1) { // we're all alone out here...
+    syncedWithGroup = false;
+  }
   
   // only connect to the AP with the lowest NodeID
   if (lowestNodeID < ESP8266WiFiMesh::stringToUint64(meshInstance.getNodeID())) {
     // we have found a master node!  connect!
     ESP8266WiFiMesh::connectionQueue.push_back(NetworkInfo(lowestValidNetworkIndex));
-  }
-  else {
-    // *I* am the master!  Mwuahahahaaa!
-    // uhhh.. I don't think we do anything special if we are the master...
   }
 }
 
