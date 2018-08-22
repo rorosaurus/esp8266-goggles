@@ -1,5 +1,8 @@
 #include <ESP8266WiFi.h>
 #include <ESP8266WiFiMesh.h>
+
+#define FASTLED_ALLOW_INTERRUPTS 0 // with the esp8266, we have to bitbang the output, so disable interrupts during fastLED so we don't glitch out
+
 #include "FastLED.h"
 
 FASTLED_USING_NAMESPACE
@@ -167,7 +170,7 @@ void setup() {
 }
 
 typedef void (*SimplePatternList[])(); // List of patterns to cycle through.  Each is defined as a separate function below.
-SimplePatternList patterns = { rainbow, rainbowWithGlitter, confetti, sinelon, juggle, bpm };
+SimplePatternList patterns = { rainbow, rainbowWithGlitter, confetti, oppositeSpin, sinelon, juggle, bpm };
 
 // main loop, which executes forever
 void loop() {
@@ -282,6 +285,17 @@ void sinelon() {
   fadeToBlackBy( leds, NUM_LEDS, 20);
   int pos = beatsin16( 13, 0, NUM_LEDS-1 );
   leds[pos] += CHSV( hue, 255, 192);
+}
+
+void oppositeSpin() {
+  // each eye rotates three opposite LED patches
+  fill_solid(leds, NUM_LEDS, CRGB::Black);
+  int pos = map(beat8(80), 0, 255, 0, (NUM_LEDS/2)-1);
+  int oppositePos = pos + (NUM_LEDS/4) % (NUM_LEDS-1);
+  leds[pos] += CHSV( hue, 255, 192);
+  leds[oppositePos] += CHSV( hue, 255, 192);
+  leds[NUM_LEDS - pos] += CHSV( hue, 255, 192);
+  leds[NUM_LEDS - oppositePos] += CHSV( hue, 255, 192);
 }
 
 void juggle() {
