@@ -189,8 +189,8 @@ void setup() {
 
   request = "Hello world request #" + String(requestNumber) + " from " + meshNode.getMeshName() + meshNode.getNodeID() + ".";
   
-  // TODO: give each device unique static IPs
-  meshNode.setStaticIP(IPAddress(192, 168, 4, 22)); // Activate static IP mode to speed up connection times.
+  // TODO: give each device unique static IPs, saves 200ms on wifi connect
+  //meshNode.setStaticIP(IPAddress(192, 168, 4, 22)); // Activate static IP mode to speed up connection times.
 
   // force an initial scan/sync
   attemptSync();
@@ -259,7 +259,8 @@ void handleButton() {
 
   // handle mid-press
   else if (buttonNewState == HIGH && buttonOldState == LOW // we just let go of the button
-      && millis() > lastButtonHigh + BUTTON_MIDPRESS_MILLIS) {
+      && millis() > lastButtonHigh + BUTTON_MIDPRESS_MILLIS
+      && masterNodeID != meshNode.getNodeID()) {
     winkyFace();
   }
 
@@ -315,7 +316,6 @@ void winkyFace() {
   uint32_t startTime = millis();
   if (wifiEnabled){
     attemptSync(); // try to resync with the group
-    // TODO: what if the leader winks?  prevent it?
   }
   // make sure we wait at least 1 second
   if (millis() - startTime < 1000){
