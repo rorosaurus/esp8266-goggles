@@ -215,12 +215,12 @@ void loop() {
     wifiEnabled = !wifiEnabled;
     if (wifiEnabled) {
       for(int i = 0; i < NUM_LEDS; i++) {
-        leds[i] = CRGB::Red;
+        leds[i] = CRGB::Green;
       }
     }
     else {
       for(int i = 0; i < NUM_LEDS; i++) {
-        leds[i] = CRGB::Green;
+        leds[i] = CRGB::Red;
       }
     }
     FastLED.show();
@@ -240,8 +240,8 @@ void loop() {
     hue++;
     lastHueChange = millis();
   }
-  // change the animation every now and then
-  if (millis() >= lastPatternChange + (CHANGE_PATTERN_SECONDS * 1000)) {
+  // change the animation every now and then, if we're in wifi/group mode
+  if (wifiEnabled && millis() >= lastPatternChange + (CHANGE_PATTERN_SECONDS * 1000)) {
     nextPattern();
   }
 }
@@ -288,7 +288,7 @@ void sinelon() {
 }
 
 void oppositeSpin() {
-  // each eye rotates opposite LED patches of two
+  // each eye rotates opposite LED patches of 2-3
   fill_solid(leds, NUM_LEDS, CRGB::Black);
   int pos = map(beat8(80), 0, 255, 0, (NUM_LEDS/2)-1);
   for (int i=0; i< (NUM_LEDS/2); i++){
@@ -300,7 +300,7 @@ void oppositeSpin() {
 }
 
 void oppositeSin() {
-  // each eye rotates opposite LED patches of two
+  // each eye rotates opposite LED patches of 2-3 to sinusoid
   fill_solid(leds, NUM_LEDS, CRGB::Black);
   int pos = map(beatsin8(60), 0, 255, 0, (NUM_LEDS/2)-1);
   for (int i=0; i< (NUM_LEDS/2); i++){
