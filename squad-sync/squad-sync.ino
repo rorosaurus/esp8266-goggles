@@ -22,7 +22,8 @@ uint32_t lastHueChange = millis();
 // Push button information
 #define BUTTON_PIN 4 // this is the pin that our push button is attached to (pin 4 maps to "D2" labelled on our board)
 bool buttonOldState = HIGH;
-int32_t lastButtonHigh = millis(); // the millis of the last time we saw the button as "high" (not pressed)
+int32_t lastButtonHigh = 999999999; // the millis of the last time we saw the button as "high" (not pressed)
+#define BUTTON_MIDPRESS_MILLIS 500
 #define BUTTON_LONGPRESS_MILLIS 3000 // number of millis before registering a long press
 
 // FastLED macros
@@ -204,28 +205,37 @@ void loop() {
   
   // Update current button state
   bool buttonNewState = digitalRead(BUTTON_PIN);
-  if (buttonNewState == HIGH) lastButtonHigh = millis();
-  if (buttonNewState == LOW && buttonOldState == HIGH) {
-    // TODO: disable unless we are solo
+    
+  // handle short press
+  if (buttonNewState == HIGH && buttonOldState == LOW) {
+    // TODO: disable when we are in a group
     nextPattern();
   }
-  buttonOldState = buttonNewState;  // Update button state variables
-  if (millis() > lastButtonHigh + BUTTON_LONGPRESS_MILLIS) {
-    // handle longpress
+  
+  // handle mid-press
+  if (buttonNewState == HIGH // we just let go of the button
+      && millis() > lastButtonHigh + BUTTON_MIDPRESS_MILLIS) {
+    winkyFace();
+  }
+  
+  // handle longpress
+  else if (millis() > lastButtonHigh + BUTTON_LONGPRESS_MILLIS) {
+    // toggle wifiEnabled
     wifiEnabled = !wifiEnabled;
+    // give user some feedback
     if (wifiEnabled) {
-      for(int i = 0; i < NUM_LEDS; i++) {
-        leds[i] = CRGB::Green;
-      }
+      fill_solid(leds, NUM_LEDS, CRGB::Green);
     }
     else {
-      for(int i = 0; i < NUM_LEDS; i++) {
-        leds[i] = CRGB::Red;
-      }
+      fill_solid(leds, NUM_LEDS, CRGB::Red);
     }
     FastLED.show();
-    FastLED.delay(3000);
+    FastLED.delay(2000);
   }
+
+  buttonNewState = digitalRead(BUTTON_PIN);
+  if (buttonNewState == HIGH) lastButtonHigh = millis();
+  buttonOldState = buttonNewState;  // Update button state variables
   
   // Call the current pattern function once, updating the 'leds' array
   patterns[currentPatternNumber]();
@@ -255,6 +265,44 @@ void nextPattern() {
 // ====================
 // animation functions
 // ====================
+
+void winkyFace() {
+  fill_solid(leds, NUM_LEDS, CRGB::Black);
+  // init eyes
+  leds[1] = CRGB::Yellow;
+  leds[(NUM_LEDS/2)-1] = CRGB::Yellow;
+  leds[(NUM_LEDS/2)+1] = CRGB::Yellow;
+  leds[NUM_LEDS-1] = CRGB::Yellow;
+  FastLED.show();  
+  FastLED.delay(100);
+
+  // animate smile
+  for (int j=5; j < 12; j++) {
+    leds[j] = CRGB::Yellow;
+    leds[j+(NUM_LEDS/2)] = CRGB::Yellow;
+    FastLED.show();  
+    FastLED.delay(50);
+  }
+  FastLED.show();  
+  FastLED.delay(500);
+
+  // wink
+  for (int i=0; i < FRAMES_PER_SECOND/2; i++) {
+    if (i < (FRAMES_PER_SECOND/4)){ // fade out wink
+      leds[1]              = blend(CRGB::Yellow, CRGB::Black, map(i, 0, (FRAMES_PER_SECOND/4), 0, 255));
+      leds[(NUM_LEDS/2)+1] = blend(CRGB::Yellow, CRGB::Black, map(i, 0, (FRAMES_PER_SECOND/4), 0, 255));
+    }
+    else { // fade in wink
+      leds[1]              = blend(CRGB::Black, CRGB::Yellow, map(i, (FRAMES_PER_SECOND/4), (FRAMES_PER_SECOND/2)-1, 0, 255));
+      leds[(NUM_LEDS/2)+1] = blend(CRGB::Black, CRGB::Yellow, map(i, (FRAMES_PER_SECOND/4), (FRAMES_PER_SECOND/2)-1, 0, 255));
+    }
+    
+    FastLED.show();  
+    FastLED.delay(1000/FRAMES_PER_SECOND);
+  }
+  
+  FastLED.delay(1000);
+}
 
 void rainbow() {
   // FastLED's built-in rainbow generator
