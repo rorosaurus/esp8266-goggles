@@ -248,18 +248,29 @@ void handleButton() {
   if (millis() > lastButtonHigh + BUTTON_LONGPRESS_MILLIS) {
     // toggle wifiEnabled
     wifiEnabled = !wifiEnabled;
+    
     // give user some feedback
+    uint32_t startTime = millis();
     if (wifiEnabled) {
       fill_solid(leds, NUM_LEDS, CRGB::Green);
+      FastLED.show();
       meshNode.activateAP();
+      masterNodeID = "";
+      if (millis() - startTime < 2000){
+        FastLED.delay(2000 - (millis() - startTime));
+      }
+      attemptSync();
     }
     else { // wifi is disabled
       fill_solid(leds, NUM_LEDS, CRGB::Red);
+      FastLED.show();
       meshNode.deactivateAP();
+      WiFi.mode(WIFI_OFF);
       masterNodeID = "";
+      if (millis() - startTime < 2000){
+        FastLED.delay(2000 - (millis() - startTime));
+      }
     }
-    FastLED.show();
-    FastLED.delay(2000);
   }
 
   // handle mid-press
