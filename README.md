@@ -1,13 +1,13 @@
 # ESP8266 LED Goggle Squad
-Code and instructions to build a squad of rechargable LED goggles that automatically synchronize their animations with each other!
+Code and instructions to build a squad of rechargable LED goggles that automatically synchronize their animations with each other!  You can change the code slightly to work with any LED strip!
 
 ![Wifi sync demo](demo.gif)
 
 # Make your own!
-Follow my [assembly instructions](/assembly) to make your own Goggles/Backpack/etc and join our squad!
+Follow my [assembly instructions](/assembly.md) to make your own Goggles/Backpack/etc and join our squad!
 
 # How to use yours
-I published a page with some [tips for using](/using) your Goggles!
+I published a page with some [tips for using](/using.md) your Goggles!
 
 # Links
 * [Wemos D1 GitHub](https://github.com/wemos/Arduino_D1)
