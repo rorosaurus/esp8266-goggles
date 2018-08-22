@@ -170,7 +170,7 @@ void setup() {
 }
 
 typedef void (*SimplePatternList[])(); // List of patterns to cycle through.  Each is defined as a separate function below.
-SimplePatternList patterns = { rainbow, rainbowWithGlitter, confetti, oppositeSpin, sinelon, juggle, bpm };
+SimplePatternList patterns = { rainbow, rainbowWithGlitter, confetti, oppositeSpin, oppositeSin, sinelon, juggle, bpm };
 
 // main loop, which executes forever
 void loop() {
@@ -288,14 +288,27 @@ void sinelon() {
 }
 
 void oppositeSpin() {
-  // each eye rotates three opposite LED patches
+  // each eye rotates opposite LED patches of two
   fill_solid(leds, NUM_LEDS, CRGB::Black);
   int pos = map(beat8(80), 0, 255, 0, (NUM_LEDS/2)-1);
-  int oppositePos = pos + (NUM_LEDS/4) % (NUM_LEDS-1);
-  leds[pos] += CHSV( hue, 255, 192);
-  leds[oppositePos] += CHSV( hue, 255, 192);
-  leds[NUM_LEDS - pos] += CHSV( hue, 255, 192);
-  leds[NUM_LEDS - oppositePos] += CHSV( hue, 255, 192);
+  for (int i=0; i< (NUM_LEDS/2); i++){
+    if (((pos + i) & ((NUM_LEDS/4)-1)) < 2){
+      leds[i] += CHSV( hue, 255, 192);
+      leds[NUM_LEDS - i] += CHSV( hue, 255, 192);
+    }
+  }
+}
+
+void oppositeSin() {
+  // each eye rotates opposite LED patches of two
+  fill_solid(leds, NUM_LEDS, CRGB::Black);
+  int pos = map(beatsin8(60), 0, 255, 0, (NUM_LEDS/2)-1);
+  for (int i=0; i< (NUM_LEDS/2); i++){
+    if (((pos + i) & ((NUM_LEDS/4)-1)) < 2){
+      leds[i] += CHSV( hue, 255, 192);
+      leds[NUM_LEDS - i] += CHSV( hue, 255, 192);
+    }
+  }
 }
 
 void juggle() {
