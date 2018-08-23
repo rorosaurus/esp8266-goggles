@@ -35,6 +35,7 @@ int32_t lastButtonHigh = 999999999; // the millis of the last time we saw the bu
 // Globals for handling the wifi/mesh
 bool wifiEnabled = true;
 String masterNodeID = "FFFFFF";
+bool forceResync = false;
 #define nodeID "" // suffix for the wifi network, leave blank unless you're an accessory (backpack, etc.)
 #define meshName "GoggleSquad_" // prefix for the wifi networks
 #define meshPassword "ChangeThisWiFiPassword_TODO" // universal password for the networks, for some mild security
@@ -124,6 +125,7 @@ void networkFilter(int numberOfNetworks, ESP8266WiFiMesh &meshInstance) {
   else if (lowestNodeID < ESP8266WiFiMesh::stringToUint64(meshInstance.getNodeID())) { // there exists a node with a lower ID than ourselves
     if (!sawMasterNode // also only connect if we didn't see our old master
         || lowestNodeID < ESP8266WiFiMesh::stringToUint64(masterNodeID) // or if we find a better master
+        || forceResync // or if we're forcing a resync
         || millis() > timeOfLastSync + SYNC_INTERVAL_MILLIS){ // or if this is a regularly scheduled sync
       ESP8266WiFiMesh::connectionQueue.push_back(NetworkInfo(lowestValidNetworkIndex));
       
@@ -146,6 +148,7 @@ void networkFilter(int numberOfNetworks, ESP8266WiFiMesh &meshInstance) {
   }
   
   timeOfLastScan = millis();
+  forceResync = false;
 }
 
 /**
@@ -268,7 +271,8 @@ void handleButton() {
   bool buttonNewState = digitalRead(BUTTON_PIN);
     
   // handle longpress
-  if (millis() > lastButtonHigh + BUTTON_LONGPRESS_MILLIS) {
+  if (buttonNewState == HIGH && buttonOldState == LOW // we just let go of the button
+      && millis() > lastButtonHigh + BUTTON_LONGPRESS_MILLIS) {
     // toggle wifiEnabled
     wifiEnabled = !wifiEnabled;
     
@@ -354,6 +358,7 @@ void winkyFace() {
 
   uint32_t startTime = millis();
   if (wifiEnabled){
+    forceResync = true;
     attemptSync(); // try to resync with the group
   }
   // make sure we wait at least 1 second
