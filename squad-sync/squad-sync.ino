@@ -34,12 +34,13 @@ int32_t lastButtonHigh = 999999999; // the millis of the last time we saw the bu
 
 // Globals for handling the wifi/mesh
 bool wifiEnabled = true;
-String masterNodeID = "";
+String masterNodeID = "FFFFFF";
 #define nodeID "" // suffix for the wifi network, leave blank unless you're an accessory (backpack, etc.)
 #define meshName "GoggleSquad_" // prefix for the wifi networks
 #define meshPassword "ChangeThisWiFiPassword_TODO" // universal password for the networks, for some mild security
 #define SYNC_INTERVAL_MILLIS 600000 // sync state variables every 10 minutes
-#define scanIntervalMillis 30000 // scan for new master every 30 seconds
+#define SCAN_INTERVAL_MILLIS 30000 // scan for new master every 30 seconds
+int32_t timeOfLastSync = 0;
 int32_t timeOfLastScan = 0;
 unsigned int requestNumber = 0;
 unsigned int responseNumber = 0;
@@ -58,9 +59,8 @@ ESP8266WiFiMesh meshNode = ESP8266WiFiMesh(manageRequest, manageResponse, networ
 // ====================
 
 void attemptSync(){
-  Serial.println(request);
+  Serial.println("Attempting tranmission of request: " + request);
   meshNode.attemptTransmission(request, true); // try to talk to others, disconnect after
-  timeOfLastScan = millis();
 }
 
 /**
@@ -94,6 +94,8 @@ String manageRequest(const String &request, ESP8266WiFiMesh &meshInstance) {
 void networkFilter(int numberOfNetworks, ESP8266WiFiMesh &meshInstance) {
   int lowestValidNetworkIndex = -1;
   uint64_t lowestNodeID = 0xFFFFFFFFFFFFFFFF;
+  bool sawMasterNode = false;
+  Serial.println("Current master node: " + masterNodeID);
   
   for (int i = 0; i < numberOfNetworks; ++i) {
     String currentSSID = WiFi.SSID(i);
@@ -108,17 +110,42 @@ void networkFilter(int numberOfNetworks, ESP8266WiFiMesh &meshInstance) {
         lowestNodeID = targetNodeID;
         lowestValidNetworkIndex = i;
       }
+
+      if(currentSSID.substring(meshNameIndex + meshInstance.getMeshName().length()) == masterNodeID){ // our master node is still here
+        sawMasterNode = true;
+        Serial.println("Saw master node '" + masterNodeID + "'");
+        
+      }
     }
   }
-  if (lowestValidNetworkIndex == -1) { // we're all alone out here...
-    masterNodeID = "";
+  if (lowestValidNetworkIndex == -1) { // we're absolutely all alone out here...
+    masterNodeID = "FFFFFF";
+  }
+  else if (lowestNodeID < ESP8266WiFiMesh::stringToUint64(meshInstance.getNodeID())) { // there exists a node with a lower ID than ourselves
+    if (!sawMasterNode // also only connect if we didn't see our old master
+        || lowestNodeID < ESP8266WiFiMesh::stringToUint64(masterNodeID) // or if we find a better master
+        || millis() > timeOfLastSync + SYNC_INTERVAL_MILLIS){ // or if this is a regularly scheduled sync
+      ESP8266WiFiMesh::connectionQueue.push_back(NetworkInfo(lowestValidNetworkIndex));
+      
+      // we have joined a group!  keep track of our master node's ID.
+      masterNodeID = WiFi.SSID(lowestValidNetworkIndex).substring(WiFi.SSID(lowestValidNetworkIndex).indexOf(meshInstance.getMeshName()) + meshInstance.getMeshName().length());
+      Serial.println("New master node: " + masterNodeID);
+      timeOfLastSync = millis();
+    }
+  }
+  else { // there are other nodes out there, but we have the lowest NodeID.  we are the new master!
+    masterNodeID = meshInstance.getNodeID();
   }
   
-  // only connect to the AP with the lowest NodeID
-  if (lowestNodeID < ESP8266WiFiMesh::stringToUint64(meshInstance.getNodeID())) {
-    // we have found a master node!  connect!
-    ESP8266WiFiMesh::connectionQueue.push_back(NetworkInfo(lowestValidNetworkIndex));
+  if (millis() > timeOfLastSync + SYNC_INTERVAL_MILLIS){
+    timeOfLastSync = millis();
+    Serial.println("Sync attempt");
   }
+  else {
+    Serial.println("Scanned to refresh master");
+  }
+  
+  timeOfLastScan = millis();
 }
 
 /**
@@ -150,9 +177,6 @@ transmission_status_t manageResponse(const String &response, ESP8266WiFiMesh &me
   remainingString = remainingString.substring(commaIndex+1);
   String nextChangeString = remainingString.substring(21);
   lastPatternChange = millis() - ((CHANGE_PATTERN_SECONDS * 1000) - (atoi(nextChangeString.c_str())));
-
-  // we have joined a group!  keep track of our master node's ID.
-  masterNodeID = meshInstance.getNodeID();
   
   // (void)meshInstance; // This is useful to remove a "unused parameter" compiler warning. Does nothing else.
   return statusCode;
@@ -202,10 +226,9 @@ SimplePatternList patterns = { rainbow, rainbowWithGlitter, confetti, oppositeSp
 // main loop, which executes forever
 void loop() {
   if (wifiEnabled) {
-    if (millis() > timeOfLastScan + SYNC_INTERVAL_MILLIS) { // if we haven't sync'd in a while, search and sync
-        attemptSync();
-    //} else if (){ // TODO: check for new or abandoned master node
-      
+    if (millis() > timeOfLastSync + SYNC_INTERVAL_MILLIS // if we haven't sync'd in a while, search and sync
+        || millis() > timeOfLastScan + SCAN_INTERVAL_MILLIS) { // also if we haven't refreshed wifi networks recently
+      attemptSync();
     } else {
       /* Accept any incoming connections */
       meshNode.acceptRequest();
@@ -255,7 +278,7 @@ void handleButton() {
       fill_solid(leds, NUM_LEDS, CRGB::Green);
       FastLED.show();
       meshNode.activateAP();
-      masterNodeID = "";
+      masterNodeID = "FFFFFF";
       if (millis() - startTime < 2000){
         FastLED.delay(2000 - (millis() - startTime));
       }
@@ -266,7 +289,7 @@ void handleButton() {
       FastLED.show();
       meshNode.deactivateAP();
       WiFi.mode(WIFI_OFF);
-      masterNodeID = "";
+      masterNodeID = "FFFFFF";
       if (millis() - startTime < 2000){
         FastLED.delay(2000 - (millis() - startTime));
       }
@@ -275,13 +298,13 @@ void handleButton() {
 
   // handle mid-press
   else if (buttonNewState == HIGH && buttonOldState == LOW // we just let go of the button
-      && masterNodeID != meshNode.getNodeID() // prevent the lead node from winking, so everyone stays in sync
+//      && masterNodeID != meshNode.getNodeID() // TODO: prevent the lead node from winking, so everyone stays in sync
       && millis() > lastButtonHigh + BUTTON_MIDPRESS_MILLIS) {
     winkyFace();
   }
 
   // handle short press if we aren't in a group
-  else if (masterNodeID == "" && buttonNewState == HIGH && buttonOldState == LOW) {
+  else if (masterNodeID == "FFFFFF" && buttonNewState == HIGH && buttonOldState == LOW) {
     nextPattern();
   }
 
