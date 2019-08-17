@@ -38,9 +38,9 @@ bool wifiEnabled = true;
 String masterNodeID = "FFFFFF";
 bool forceResync = false;
 
-// rory's bike - FFFFFD
 // jenny's bike - FFFFFE
-#define nodeID "FFFFFF" // suffix for the wifi network, leave blank unless you're an accessory (backpack, etc.)
+// rory's bike - FFFFFD
+#define nodeID "FFFFFD" // suffix for the wifi network, leave blank unless you're an accessory (backpack, etc.)
 
 #define meshName "GoggleSquad_" // prefix for the wifi networks
 #define meshPassword "ChangeThisWiFiPassword_TODO" // universal password for the networks, for some mild security
@@ -51,6 +51,8 @@ int32_t timeOfLastScan = 0;
 unsigned int requestNumber = 0;
 unsigned int responseNumber = 0;
 String request = "";
+
+bool seenOwner = false;
 
 // Mesh network function declarations
 String manageRequest(const String &request, ESP8266WiFiMesh &meshInstance);
@@ -98,6 +100,7 @@ String manageRequest(const String &request, ESP8266WiFiMesh &meshInstance) {
    @param meshInstance The ESP8266WiFiMesh instance that called the function.
 */
 void networkFilter(int numberOfNetworks, ESP8266WiFiMesh &meshInstance) {
+  seenOwner = false;
   int lowestValidNetworkIndex = -1;
   uint64_t lowestNodeID = 0xFFFFFFFFFFFFFFFF;
   bool sawMasterNode = false;
@@ -109,7 +112,19 @@ void networkFilter(int numberOfNetworks, ESP8266WiFiMesh &meshInstance) {
 
     /* Connect to any _suitable_ APs which contain meshInstance.getMeshName() */
     if (meshNameIndex >= 0) {
-      uint64_t targetNodeID = ESP8266WiFiMesh::stringToUint64(currentSSID.substring(meshNameIndex + meshInstance.getMeshName().length()));
+      String targetNodeIDString = currentSSID.substring(meshNameIndex + meshInstance.getMeshName().length());
+      Serial.println("targetNodeIDString = " + targetNodeIDString);
+
+      // rory's backpack - 6e283e
+      // rory's goggles - 4c306c
+      // jenny's goggles - 91c367
+      // jenny's backpack - 4c3e67
+      if (targetNodeIDString == "6e283e" ||
+          targetNodeIDString == "4c306c") {
+        seenOwner = true;
+      }
+      
+      uint64_t targetNodeID = ESP8266WiFiMesh::stringToUint64(targetNodeIDString);
 
       // see if this is the lowestID we've found yet
       if(targetNodeID < lowestNodeID){
@@ -245,8 +260,7 @@ void loop() {
     
   handleButton();
 
-  if (masterNodeID != "FFFFFF" && // we aren't alone
-      masterNodeID != "FFFFFE") { // the other node isn't the other bike
+  if (seenOwner) {
     // Call the current pattern function once, updating the 'leds' array
     patterns[currentPatternNumber]();
   }
